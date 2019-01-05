@@ -404,22 +404,24 @@ namespace Cave.IO
 
                     case Token.Comma:
                         if (check == Token.ArrayOpen) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
-                        NextToken(jsonString, ref index);
+                        token = NextToken(jsonString, ref index);
                         break;
 
                     case Token.ArrayClose:
                         if (check == Token.Comma) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
-                        NextToken(jsonString, ref index);
+                        token = NextToken(jsonString, ref index);                        
                         return;
 
                     case Token.ObjectOpen:
                         JsonNode sub = new JsonNode(JsonNodeType.Object, (i++).ToString());
                         ParseContent(sub, jsonString, ref index);
+                        token = PeekToken(jsonString, index);
                         array.Add(sub);
                         break;
 
                     default:
                         ParseContent(array, jsonString, ref index);
+                        token = PeekToken(jsonString, index);
                         break;
                 }
                 check = token;
