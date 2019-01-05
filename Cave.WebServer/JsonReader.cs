@@ -274,7 +274,7 @@ namespace Cave.IO
             Token token;
 
             // {
-            NextToken(jsonString, ref index);
+            Token check = NextToken(jsonString, ref index);
 
             while (true)
             {
@@ -286,10 +286,12 @@ namespace Cave.IO
                         throw new InvalidDataException(string.Format("Missing data at position {0}!", index));
 
                     case Token.Comma:
+                        if (check == Token.ArrayOpen) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
                         NextToken(jsonString, ref index);
                         break;
 
                     case Token.ObjectClose:
+                        if (check == Token.Comma) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
                         NextToken(jsonString, ref index);
                         return;
 
@@ -309,6 +311,7 @@ namespace Cave.IO
                         obj.Add(sub);
                         break;
                 }
+                check = token;
             }
         }
 
@@ -366,14 +369,23 @@ namespace Cave.IO
 
                 case Token.None: break;
 
-                default: throw new NotImplementedException(string.Format("JsonToken {0} undefined!", token));
+                default: throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
             }
         }
 
         void ParseArray(JsonNode array, string jsonString, ref int index)
         {
+            if (array.Type == JsonNodeType.Array)
+            {
+                var newArray = new JsonNode(JsonNodeType.Array, "");
+                array.Add(newArray);
+                array = newArray;
+            }
+            else
+            {
+                array.ConvertToArray();
+            }
             // [
-            array.ConvertToArray();
             Token check = NextToken(jsonString, ref index);
             if (check != Token.ArrayOpen)
             {
@@ -386,13 +398,17 @@ namespace Cave.IO
                 Token token = PeekToken(jsonString, index);
                 switch (token)
                 {
-                    case Token.None: return; // throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}!", index));
+                    case Token.None:
+                        //in some cases we need to exit here clean, check!
+                        throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
 
                     case Token.Comma:
+                        if (check == Token.ArrayOpen) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
                         NextToken(jsonString, ref index);
                         break;
 
                     case Token.ArrayClose:
+                        if (check == Token.Comma) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
                         NextToken(jsonString, ref index);
                         return;
 
@@ -406,6 +422,7 @@ namespace Cave.IO
                         ParseContent(array, jsonString, ref index);
                         break;
                 }
+                check = token;
             }
         }
 
