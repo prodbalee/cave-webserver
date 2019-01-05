@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net;
 using System.Threading;
 using Cave.Web;
 using NUnit.Framework;
@@ -7,8 +8,6 @@ namespace Test
 {
     public class WebServerTest
     {
-        ManualResetEvent exit = new ManualResetEvent(false);
-
         [Test]
         public void Test1()
         {
@@ -28,7 +27,9 @@ namespace Test
 
             server.Listen(8080);
 
-            exit.WaitOne();
+            var client = new WebClient();
+            var data = client.DownloadData("http://localhost:8080");
+
             server.Close();
         }
     }
