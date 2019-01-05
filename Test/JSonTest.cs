@@ -91,38 +91,38 @@ namespace Test
             JsonNode objNode = reader.Root["obj"];
 
             // object node
-            Assert.AreEqual(objNode.Type, JsonNodeType.Object);
-            Assert.AreEqual(objNode.Names.Length, 2);
-            Assert.AreEqual(objNode.Names[0], "o1");
-            Assert.AreEqual(objNode.Names[1], "o2");
-            Assert.AreEqual(objNode.SubNodes.Length, 2);
-            Assert.AreEqual(objNode.SubNodes[0].Name, "o1");
-            Assert.AreEqual(objNode.SubNodes[0].Value, "v1");
-            Assert.AreEqual(objNode.SubNodes[1].Name, "o2");
-            Assert.AreEqual(objNode.SubNodes[1].Value, "v2");
+            Assert.AreEqual(JsonNodeType.Object, objNode.Type);
+            Assert.AreEqual(2, objNode.Names.Length);
+            Assert.AreEqual("o1", objNode.Names[0]);
+            Assert.AreEqual("o2", objNode.Names[1]);
+            Assert.AreEqual(2, objNode.SubNodes.Length);
+            Assert.AreEqual("o1", objNode.SubNodes[0].Name);
+            Assert.AreEqual("v1", objNode.SubNodes[0].Value);
+            Assert.AreEqual("o2", objNode.SubNodes[1].Name);
+            Assert.AreEqual("v2", objNode.SubNodes[1].Value);
 
 
             // array node
             JsonNode arrNode = reader.Root["arr"];
-            Assert.AreEqual(arrNode.Type, JsonNodeType.Array);
-            Assert.AreEqual(arrNode.Values.Length, 3);
-            Assert.AreEqual(arrNode.Values[0], 0);
-            Assert.AreEqual(arrNode.Values[1], 1);
-            Assert.AreEqual(arrNode.Values[2], 2);
+            Assert.AreEqual(JsonNodeType.Array, arrNode.Type);
+            Assert.AreEqual(3, arrNode.Values.Length);
+            Assert.AreEqual(0, arrNode.Values[0]);
+            Assert.AreEqual(1, arrNode.Values[1]);
+            Assert.AreEqual(2, arrNode.Values[2]);
 
 
             // value nodes
             JsonNode trueNode = reader.Root["true"];
-            Assert.AreEqual(trueNode.Type, JsonNodeType.Value);
-            Assert.AreEqual(trueNode.Value, true);
+            Assert.AreEqual(JsonNodeType.Value, trueNode.Type);
+            Assert.AreEqual(true, trueNode.Value);
 
             JsonNode falseNode = reader.Root["false"];
-            Assert.AreEqual(falseNode.Type, JsonNodeType.Value);
-            Assert.AreEqual(falseNode.Value, false);
+            Assert.AreEqual(JsonNodeType.Value, falseNode.Type);
+            Assert.AreEqual(false, falseNode.Value);
 
             JsonNode nullNode = reader.Root["null"];
-            Assert.AreEqual(nullNode.Type, JsonNodeType.Value);
-            Assert.AreEqual(nullNode.Value, null);
+            Assert.AreEqual(JsonNodeType.Value, nullNode.Type);
+            Assert.AreEqual(null, nullNode.Value);
 
         }
     }
