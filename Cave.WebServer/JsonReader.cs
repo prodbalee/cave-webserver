@@ -182,7 +182,7 @@ namespace Cave.IO
 
             while (true)
             {
-                if (index == jsonString.Length)
+                if (index >= jsonString.Length)
                 {
                     throw new EndOfStreamException(string.Format("Unexpected end of input while reading string at position {0}!", index));
                 }
@@ -271,16 +271,19 @@ namespace Cave.IO
 
         void ParseObject(JsonNode obj, string jsonString, ref int index)
         {
-            Token l_Token;
+            Token token;
 
             // {
             NextToken(jsonString, ref index);
 
             while (true)
             {
-                switch (PeekToken(jsonString, index))
+                token = PeekToken(jsonString, index);
+                switch (token)
                 {
-                    case Token.None: return; // throw new InvalidDataException(string.Format("Missing data at position {0}!", index));
+                    case Token.None:
+                        //in some cases we need to exit here clean, check!
+                        throw new InvalidDataException(string.Format("Missing data at position {0}!", index));
 
                     case Token.Comma:
                         NextToken(jsonString, ref index);
@@ -294,16 +297,16 @@ namespace Cave.IO
                         // name
                         string name = ParseString(jsonString, ref index);
                         // :
-                        l_Token = NextToken(jsonString, ref index);
-                        if (l_Token != Token.Colon)
+                        token = NextToken(jsonString, ref index);
+                        if (token != Token.Colon)
                         {
                             throw new InvalidDataException(string.Format("Missing colon in object definition!"));
                         }
 
                         // value
-                        JsonNode l_Sub = new JsonNode(JsonNodeType.Object, name);
-                        ParseContent(l_Sub, jsonString, ref index);
-                        obj.Add(l_Sub);
+                        JsonNode sub = new JsonNode(JsonNodeType.Object, name);
+                        ParseContent(sub, jsonString, ref index);
+                        obj.Add(sub);
                         break;
                 }
             }
@@ -380,9 +383,8 @@ namespace Cave.IO
             int i = 0;
             while (true)
             {
-                Token l_Token = PeekToken(jsonString, index);
-
-                switch (l_Token)
+                Token token = PeekToken(jsonString, index);
+                switch (token)
                 {
                     case Token.None: return; // throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}!", index));
 
@@ -395,9 +397,9 @@ namespace Cave.IO
                         return;
 
                     case Token.ObjectOpen:
-                        JsonNode l_Sub = new JsonNode(JsonNodeType.Object, (i++).ToString());
-                        ParseContent(l_Sub, jsonString, ref index);
-                        array.Add(l_Sub);
+                        JsonNode sub = new JsonNode(JsonNodeType.Object, (i++).ToString());
+                        ParseContent(sub, jsonString, ref index);
+                        array.Add(sub);
                         break;
 
                     default:
@@ -410,19 +412,26 @@ namespace Cave.IO
         JsonNode Parse(string jsonString)
         {
             int index = 0;
-            if (PeekToken(jsonString, index) != Token.ObjectOpen)
+            Token first = PeekToken(jsonString, index);
+            if (first == Token.None)
             {
-                throw new NotSupportedException(string.Format("Json data has to start with an object instance!"));
+                throw new InvalidDataException(string.Format("Json data does not start with a valid token!"));
             }
-            JsonNode l_Root = new JsonNode(JsonNodeType.Object, "Root");
-            ParseObject(l_Root, jsonString, ref index);
+            JsonNode root = new JsonNode(JsonNodeType.Object, "");
+            ParseContent(root, jsonString, ref index);
             SkipWhitespace(jsonString, ref index);
             if (index < jsonString.Length)
             {
                 throw new InvalidDataException(string.Format("Additional data at end encountered!"));
             }
-
-            return l_Root;
+            //set root to first (single) node if array / object
+            if (first == Token.ObjectOpen)
+            {
+                var subs = root.SubNodes;
+                if (subs.Length > 1) throw new InvalidDataException("More than one root node!");
+                if (subs.Length == 1) return subs[0];
+            }
+            return root;
         }
 
         #endregion
