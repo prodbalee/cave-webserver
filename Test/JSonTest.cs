@@ -218,6 +218,7 @@ namespace Test
             Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("{\"a}"); });
             Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\"}"); });
             Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\":}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\":\"b\",}"); });
         }
 
     }
