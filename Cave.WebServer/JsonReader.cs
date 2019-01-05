@@ -428,7 +428,6 @@ namespace Cave.IO
             if (first == Token.ObjectOpen)
             {
                 var subs = root.SubNodes;
-                if (subs.Length > 1) throw new InvalidDataException("More than one root node!");
                 if (subs.Length == 1) return subs[0];
             }
             return root;
