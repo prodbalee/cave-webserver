@@ -70,6 +70,7 @@ namespace Test
                 Assert.Equals(i+1, node.Values[i]);
             }
         }
+
         [Test]
         public void BasicValuesTests()
         {
@@ -81,5 +82,48 @@ namespace Test
             Assert.AreEqual(null, (string)GetReader("null").Root.Value);
         }
 
+
+        [Test]
+        public void CaveJsonTest()
+        {
+            string jsonString = "{\"obj\":{\"o1\": \"v1\",\"o2\": \"v2\"},\"arr\":[0,1,2],\"true\": true,\"false\":false,\"null\":null}";
+            var reader = GetReader(jsonString);
+            JsonNode objNode = reader.Root["obj"];
+
+            // object node
+            Assert.AreEqual(objNode.Type, JsonNodeType.Object);
+            Assert.AreEqual(objNode.Names.Length, 2);
+            Assert.AreEqual(objNode.Names[0], "o1");
+            Assert.AreEqual(objNode.Names[1], "o2");
+            Assert.AreEqual(objNode.SubNodes.Length, 2);
+            Assert.AreEqual(objNode.SubNodes[0].Name, "o1");
+            Assert.AreEqual(objNode.SubNodes[0].Value, "v1");
+            Assert.AreEqual(objNode.SubNodes[1].Name, "o2");
+            Assert.AreEqual(objNode.SubNodes[1].Value, "v2");
+
+
+            // array node
+            JsonNode arrNode = reader.Root["arr"];
+            Assert.AreEqual(arrNode.Type, JsonNodeType.Array);
+            Assert.AreEqual(arrNode.Values.Length, 3);
+            Assert.AreEqual(arrNode.Values[0], 0);
+            Assert.AreEqual(arrNode.Values[1], 1);
+            Assert.AreEqual(arrNode.Values[2], 2);
+
+
+            // value nodes
+            JsonNode trueNode = reader.Root["true"];
+            Assert.AreEqual(trueNode.Type, JsonNodeType.Value);
+            Assert.AreEqual(trueNode.Value, true);
+
+            JsonNode falseNode = reader.Root["false"];
+            Assert.AreEqual(falseNode.Type, JsonNodeType.Value);
+            Assert.AreEqual(falseNode.Value, false);
+
+            JsonNode nullNode = reader.Root["null"];
+            Assert.AreEqual(nullNode.Type, JsonNodeType.Value);
+            Assert.AreEqual(nullNode.Value, null);
+
+        }
     }
 }
