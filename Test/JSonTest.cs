@@ -118,7 +118,7 @@ namespace Test
             JsonNode node;
             node = GetReader("[true,1,\"2\",{\"3\" : \"drei\"},[\"vier\",5,[\"6\",{\"7\":8}]]]").Root;
             Assert.AreEqual(JsonNodeType.Array, node.Type);
-            Assert.AreEqual(5, node.SubNodes.Length);
+            Assert.AreEqual(5, node.Values.Length);
 
             Assert.AreEqual(JsonNodeType.Value, node[0].Type);
             Assert.AreEqual(JsonNodeType.Value, node[1].Type);
@@ -138,13 +138,13 @@ namespace Test
             Assert.AreEqual(JsonNodeType.Array, node[4][2].Type);
 
             Assert.AreEqual("vier", node[4][0].Value.ToString());
-            Assert.AreEqual(5, Convert.ToInt32(node[4][1]));
+            Assert.AreEqual(5, Convert.ToInt32(node[4][1].Value));
 
             Assert.AreEqual(JsonNodeType.Value, node[4][2][0].Type);
             Assert.AreEqual(JsonNodeType.Object, node[4][2][1].Type);
 
-            Assert.AreEqual("6", node[4][2][1].Value.ToString());
-            Assert.AreEqual(8, Convert.ToInt32(node[4][2][1]["7"]));
+            Assert.AreEqual("6", node[4][2][0].Value.ToString());
+            Assert.AreEqual(8, Convert.ToInt32(node[4][2][1]["7"].Value));
         }
 
         [Test]
