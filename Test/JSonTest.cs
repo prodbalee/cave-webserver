@@ -19,8 +19,8 @@ namespace Test
         public void BasicStringTests()
         {
             // string
-            Assert.AreEqual(string.Empty, (string)GetReader("\"\"").Root.Value);
-            Assert.AreEqual("TestString", (string)GetReader("\"TestString\"").Root.Value);
+            Assert.AreEqual(string.Empty, (string)GetReader("\"\"").Root.Value.ToString());
+            Assert.AreEqual("TestString", (string)GetReader("\"TestString\"").Root.Value.ToString());
         }
 
         [Test]
@@ -28,7 +28,13 @@ namespace Test
         {
             // number
             Assert.AreEqual(0, Convert.ToInt32(GetReader("0").Root.Value));
-            Assert.AreEqual(3.14, Convert.ToDouble(GetReader("3.14").Root.Value));
+            Assert.AreEqual(0, Convert.ToInt32(GetReader("-0").Root.Value));
+            Assert.AreEqual(3.14d, Convert.ToDouble(GetReader("3.14").Root.Value));
+            Assert.AreEqual(-0.56d, Convert.ToDouble(GetReader("-0.56").Root.Value));
+            Assert.AreEqual(100d, Convert.ToDouble(GetReader("1E2").Root.Value));
+            Assert.AreEqual(100d, Convert.ToDouble(GetReader("1e2").Root.Value));
+            Assert.AreEqual(1000d, Convert.ToDouble(GetReader("1E+3").Root.Value));
+            Assert.AreEqual(0.001d, Convert.ToDouble(GetReader("1E-3").Root.Value));
         }
 
         [Test]
@@ -40,9 +46,25 @@ namespace Test
             Assert.AreEqual(string.Empty, node.Name);
             Assert.AreEqual(null, node.Value);
 
-            node =  GetReader("{\"name\":\"value\"}").Root;
+            node = GetReader("{\"name\":\"value\"}").Root;
             Assert.AreEqual("name", node.Name);
             Assert.AreEqual("value", node.Value);
+
+            node = GetReader("{\"n1\":1,\"n2\":\"2\",\"n3\":true,\"n4\":false,\"n5\":null}").Root;
+            Assert.AreEqual(JsonNodeType.Object, node.Type);
+            Assert.AreEqual(5, node.SubNodes.Length);
+            Assert.AreEqual(1, Convert.ToInt32(node["n1"].Value));
+            Assert.AreEqual(1, Convert.ToInt32(node.SubNodes[0].Value));
+            Assert.AreEqual("2", node["n2"].Value.ToString());
+            Assert.AreEqual("2", node.SubNodes[1].Value.ToString());
+            Assert.AreEqual(true, node["n3"].Value);
+            Assert.AreEqual(true, node.SubNodes[2].Value);
+            Assert.AreEqual(false, node["n4"].Value);
+            Assert.AreEqual(false, node.SubNodes[3].Value);
+            Assert.AreEqual(null, node["n5"].Value);
+            Assert.AreEqual(null, node.SubNodes[4].Value);
+
+
         }
 
         [Test]
@@ -54,9 +76,6 @@ namespace Test
             Assert.AreEqual(0, node.SubNodes.Length);
             Assert.AreEqual(0, node.Names.Length, 0);
             Assert.AreEqual(0, node.Values.Length, 0);
-
-            node = GetReader("[,]").Root;
-
 
             node = GetReader("[1,2,3]").Root;
             Assert.AreEqual(0, node.SubNodes.Length);
