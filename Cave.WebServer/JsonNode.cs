@@ -198,14 +198,17 @@ namespace Cave.IO
                 List<JsonNode> result = new List<JsonNode>();
                 if (Type == JsonNodeType.Object)
                 {
-                    foreach (JsonNode obj in (ArrayList)m_Content)
+                    if (m_Content != null)
                     {
-                        if (obj == null)
+                        foreach (JsonNode obj in (ArrayList)m_Content)
                         {
-                            continue;
-                        }
+                            if (obj == null)
+                            {
+                                continue;
+                            }
 
-                        result.Add(obj);
+                            result.Add(obj);
+                        }
                     }
                 }
                 return result.ToArray();
