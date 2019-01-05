@@ -127,7 +127,7 @@ namespace Cave.IO
         }
 
         /// <summary>
-        /// Obtains the subnode with the specified name
+        /// Obtains the subnode with the specified name (object only)
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -149,6 +149,27 @@ namespace Cave.IO
                             return obj;
                         }
                     }
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Obtains the value with the specified index (array only)
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public JsonNode this[int index]
+        {
+            get
+            {
+                if (Type == JsonNodeType.Array)
+                {
+                    var value = ((ArrayList)m_Content)[index];
+                    if (value is JsonNode node) return node;
+                    node = new JsonNode(JsonNodeType.Value, "");
+                    node.AddValue(value);
+                    return node;
                 }
                 return null;
             }
