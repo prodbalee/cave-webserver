@@ -15,24 +15,6 @@ namespace Test
             return new JsonReader(new string[1] { data });
         }
 
-
-        [Test]
-        public void ErrorTests()
-        {
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(string.Empty); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(" "); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("["); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("[,]"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("[1,]"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("a"); });
-            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("\""); });
-            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("\"a"); });
-            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("{\"a}"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\"}"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\":}"); });
-        }
-
         [Test]
         public void BasicStringTests()
         {
@@ -220,5 +202,23 @@ namespace Test
             Assert.AreEqual(2, Convert.ToInt32(reader.Root["arr"][2].Value));
             Assert.AreEqual("v2", reader.Root["obj"]["o2"].Value);
         }
+
+        [Test]
+        public void ErrorTests()
+        {
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(string.Empty); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(" "); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("["); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("[,]"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("[1,]"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("a"); });
+            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("\""); });
+            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("\"a"); });
+            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("{\"a}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\"}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\":}"); });
+        }
+
     }
 }
