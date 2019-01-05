@@ -105,7 +105,6 @@ namespace Test
             Assert.AreEqual("o2", objNode.SubNodes[1].Name);
             Assert.AreEqual("v2", objNode.SubNodes[1].Value);
 
-
             // array node
             JsonNode arrNode = reader.Root["arr"];
             Assert.AreEqual(JsonNodeType.Array, arrNode.Type);
@@ -113,7 +112,6 @@ namespace Test
             Assert.AreEqual(0, arrNode.Values[0]);
             Assert.AreEqual(1, arrNode.Values[1]);
             Assert.AreEqual(2, arrNode.Values[2]);
-
 
             // value nodes
             JsonNode trueNode = reader.Root["true"];
@@ -128,6 +126,9 @@ namespace Test
             Assert.AreEqual(JsonNodeType.Value, nullNode.Type);
             Assert.AreEqual(null, nullNode.Value);
 
+            // direct access
+            Assert.AreEqual(2, Convert.ToInt32(reader.Root["arr"][2].Value));
+            Assert.AreEqual("v2", reader.Root["obj"]["o2"].Value);
         }
     }
 }
