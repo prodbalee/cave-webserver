@@ -1,6 +1,6 @@
 [Version]
-AddConfig = True
-AddDateTime = True
+AddConfig = False
+AddDateTime = False
 Major = 1
 Minor = 0
 Patch = 0
