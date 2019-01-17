@@ -1,0 +1,10 @@
+[Version]
+AddConfig = True
+AddDateTime = True
+Major = 1
+Minor = 0
+Patch = 0
+Meta = 
+Type = 0
+Full = 1.0.0
+

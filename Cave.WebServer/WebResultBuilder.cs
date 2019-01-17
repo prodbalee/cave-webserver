@@ -161,7 +161,7 @@ namespace Cave.Web
 
         /// <summary>Adds a result message.</summary>
         /// <param name="ex">The ex.</param>
-        public void AddMessage(WebException ex)
+        public void AddMessage(WebServerException ex)
         {
             AddMessage(new WebMessage()
             {

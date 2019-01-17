@@ -46,13 +46,13 @@ namespace Cave.Web
                         //if (line == "--") break;
                         //next part ?
                         if (line == boundary) { part = new WebSinglePart(); continue; }
-                        throw new WebException(WebError.UnknownContent, 0, "Invalid header in multi part content!");
+                        throw new WebServerException(WebError.UnknownContent, 0, "Invalid header in multi part content!");
                     }
                     //read header value
                     string[] kv = line.Split(new char[] { ':' }, 2);
                     if (kv.Length < 2)
                     {
-                        throw new WebException(WebError.UnknownContent, 0, "Invalid header in multi part content!");
+                        throw new WebServerException(WebError.UnknownContent, 0, "Invalid header in multi part content!");
                     }
 
                     part.Headers.Add(kv[0].Trim().ToLower(), kv[1].Trim());
@@ -77,7 +77,7 @@ namespace Cave.Web
                     }
                     if (endOfData.Length != 0)
                     {
-                        throw new WebException(WebError.UnknownContent, 0, "Invalid data after multi part content!");
+                        throw new WebServerException(WebError.UnknownContent, 0, "Invalid data after multi part content!");
                     }
                 }
             }

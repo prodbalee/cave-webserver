@@ -174,7 +174,8 @@ namespace Cave.Web
 
         /// <summary>Sets the authentication.</summary>
         /// <param name="user">The user.</param>
-        /// <exception cref="Cave.Web.WebException">
+        /// <param name="flags">Used internally to define local host usage</param>
+        /// <exception cref="Cave.Web.WebServerException">
         /// Authentication not allowed!
         /// or
         /// Session belongs to another user!
@@ -190,11 +191,11 @@ namespace Cave.Web
             userSession.Flags = flags;
             if (userSession.ID <= 0)
             {
-                throw new WebException(WebError.InternalServerError, "Authentication not allowed! SessionMode == {0}!", server.SessionMode);
+                throw new WebServerException(WebError.InternalServerError, "Authentication not allowed! SessionMode == {0}!", server.SessionMode);
             }
             if (userSession.UserID > 0 && userSession.UserID != user.ID)
             {
-                throw new WebException(WebError.InternalServerError, "Session belongs to another user!");
+                throw new WebServerException(WebError.InternalServerError, "Session belongs to another user!");
             }
 
             //set session authenticated

@@ -46,7 +46,7 @@ namespace Cave.Web
                 message = LoadSessionResult(request);
                 OnSessionUpdated(new EventArgs());
             }
-            catch (WebException ex)
+            catch (WebServerException ex)
             {
                 m_Exception = ex;
                 switch (ex.Error)
@@ -112,7 +112,7 @@ namespace Cave.Web
 
         /// <summary>Creates a new session.</summary>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public void CreateSession(string password)
         {
             lock (this)

@@ -54,8 +54,8 @@ namespace Cave.Web
                 url += request.Extension;
             }
 
-            string file = Cave.FileSystem.FileSystem.Combine(StaticFilesPath, url);
-            if (!Cave.FileSystem.FileSystem.IsRelative(file, StaticFilesPath))
+            string file = FileSystem.Combine(StaticFilesPath, url);
+            if (!FileSystem.IsRelative(file, StaticFilesPath))
             {
                 return null;
             }
@@ -76,11 +76,10 @@ namespace Cave.Web
         void GetStaticFileListing(WebData data)
         {
             string url = Uri.UnescapeDataString(data.Request.DecodedUrl).Trim('/');
-            string path = Cave.FileSystem.FileSystem.Combine(StaticFilesPath, url);
-            RowLayout layout = RowLayout.CreateTyped(typeof(WebDirectoryEntry));
+            string path = FileSystem.Combine(StaticFilesPath, url);
             List<WebDirectoryEntry> entries = new List<WebDirectoryEntry>();
-            string root = Cave.FileSystem.FileSystem.Combine(path, "..");
-            if (Cave.FileSystem.FileSystem.IsRelative(root, StaticFilesPath))
+            string root = FileSystem.Combine(path, "..");
+            if (FileSystem.IsRelative(root, StaticFilesPath))
             {
                 FileSystemInfo info = new DirectoryInfo(root);
                 WebDirectoryEntry entry = new WebDirectoryEntry()
@@ -92,32 +91,34 @@ namespace Cave.Web
                 };
                 entries.Add(entry);
             }
-            foreach (string dir in Directory.GetDirectories(path))
+            if (FileSystem.IsRelative(path, StaticFilesPath))
             {
-                FileSystemInfo info = new DirectoryInfo(dir);
-                WebDirectoryEntry entry = new WebDirectoryEntry()
+                foreach (string dir in Directory.GetDirectories(path))
                 {
-                    DateTime = info.LastWriteTime,
-                    Name = info.Name,
-                    Type = WebDirectoryEntryType.Directory,
-                    Link = "/" + Cave.FileSystem.FileSystem.Combine('/', url, info.Name),
-                };
-                entries.Add(entry);
-            }
-            foreach (string file in Directory.GetFiles(path))
-            {
-                FileInfo info = new FileInfo(file);
-                WebDirectoryEntry entry = new WebDirectoryEntry()
+                    FileSystemInfo info = new DirectoryInfo(dir);
+                    WebDirectoryEntry entry = new WebDirectoryEntry()
+                    {
+                        DateTime = info.LastWriteTime,
+                        Name = info.Name,
+                        Type = WebDirectoryEntryType.Directory,
+                        Link = "/" + FileSystem.Combine('/', url, info.Name),
+                    };
+                    entries.Add(entry);
+                }
+                foreach (string file in Directory.GetFiles(path))
                 {
-                    DateTime = info.LastWriteTime,
-                    Size = info.Length,
-                    Name = info.Name,
-                    Type = WebDirectoryEntryType.File,
-                    Link = "/" + Cave.FileSystem.FileSystem.Combine('/', url, info.Name),
-                };
-                entries.Add(entry);
+                    FileInfo info = new FileInfo(file);
+                    WebDirectoryEntry entry = new WebDirectoryEntry()
+                    {
+                        DateTime = info.LastWriteTime,
+                        Size = info.Length,
+                        Name = info.Name,
+                        Type = WebDirectoryEntryType.File,
+                        Link = "/" + FileSystem.Combine('/', url, info.Name),
+                    };
+                    entries.Add(entry);
+                }
             }
-
             HtmlPageBuilder pb = new HtmlPageBuilder(data.Request);
             pb.Content.CardOpenText($"File Listing:");
             pb.Content.ParagraphText($"{entries.Count} entries");
@@ -190,11 +191,11 @@ namespace Cave.Web
                     {
                         Trace.TraceInformation($"HandleClient [{threadId}] <red>{client.RemoteEndPoint}<default> Connection closed");
                     }
-                    catch (InvalidOperationException ex) { throw new WebException(ex, WebError.InvalidOperation, 0, ex.Message); }
-                    catch (ArgumentException ex) { throw new WebException(ex, WebError.InvalidParameters, 0, ex.Message); }
+                    catch (InvalidOperationException ex) { throw new WebServerException(ex, WebError.InvalidOperation, 0, ex.Message); }
+                    catch (ArgumentException ex) { throw new WebServerException(ex, WebError.InvalidParameters, 0, ex.Message); }
                 }
             }
-            catch (WebException ex)
+            catch (WebServerException ex)
             {
                 Trace.TraceInformation(ex.ToString());
                 if (result == null)
@@ -372,10 +373,10 @@ namespace Cave.Web
 
             if (!templates.TryGetValue(key, out WebTemplate caveWebTemplate))
             {
-                string str = Cave.FileSystem.FileSystem.Combine(data.Server.StaticFilesPath, key + ".cwt");
-                if (!Cave.FileSystem.FileSystem.IsRelative(str, data.Server.StaticFilesPath))
+                string str = FileSystem.Combine(data.Server.StaticFilesPath, key + ".cwt");
+                if (!FileSystem.IsRelative(str, data.Server.StaticFilesPath))
                 {
-                    throw new WebException(WebError.NotFound, 0, string.Format("{0} not found!", key));
+                    throw new WebServerException(WebError.NotFound, 0, string.Format("{0} not found!", key));
                 }
                 if (!File.Exists(str))
                 {
@@ -442,7 +443,7 @@ namespace Cave.Web
 
         /// <summary>Gets or sets the static files path.</summary>
         /// <value>The static files path.</value>
-        public string StaticFilesPath { get; set; } = Cave.FileSystem.FileSystem.Combine(Cave.FileSystem.FileSystem.ProgramDirectory, "files");
+        public string StaticFilesPath { get; set; } = FileSystem.Combine(FileSystem.ProgramDirectory, "files");
 
         /// <summary>Gets or sets a value indicating whether [verbose mode].</summary>
         /// <value><c>true</c> if [verbose mode]; otherwise, <c>false</c>.</value>
@@ -580,7 +581,7 @@ namespace Cave.Web
         /// or
         /// method
         /// </exception>
-        /// <exception cref="Cave.Web.WebException">0</exception>
+        /// <exception cref="Cave.Web.WebServerException">0</exception>
         public void CallMethod(WebData data)
         {
             if (data?.Session == null)
@@ -596,13 +597,13 @@ namespace Cave.Web
             try { data.Method.Invoke(data); }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException is WebException)
+                if (ex.InnerException is WebServerException)
                 {
                     throw ex.InnerException;
                 }
 
                 Trace.TraceError("Unhandled exception: {0}", ex.InnerException.ToString());
-                throw new WebException(WebError.InternalServerError, 0, string.Format("Internal Server Error at function {0}", data.Method));
+                throw new WebServerException(WebError.InternalServerError, 0, string.Format("Internal Server Error at function {0}", data.Method));
             }
         }
 
@@ -862,7 +863,7 @@ namespace Cave.Web
 
         /// <summary>Raises the <see cref="E:CheckAccess" /> event.</summary>
         /// <param name="data">The data.</param>
-        /// <exception cref="WebException">User does not have the right to access {0}</exception>
+        /// <exception cref="WebServerException">User does not have the right to access {0}</exception>
         protected internal virtual void OnCheckAccess(WebData data)
         {
             if (VerboseMode)
@@ -874,7 +875,7 @@ namespace Cave.Web
             CheckAccess?.Invoke(this, e);
             if (e.Denied)
             {
-                throw new WebException(WebError.MissingRights, "User does not have the right to access {0}", data.Method);
+                throw new WebServerException(WebError.MissingRights, "User does not have the right to access {0}", data.Method);
             }
         }
 

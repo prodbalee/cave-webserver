@@ -1,22 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-
     <IsPackable>false</IsPackable>
-
     <StartupObject>Test.Program</StartupObject>
+    <Version>1.0.0-$(Configuration.ToLower())-20190117121713</Version>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>2019.117.1217.855</FileVersion>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Cave.Settings" Version="1.0.1" />
+    <PackageReference Include="Cave.Extensions" Version="1.0.2" />
+    <PackageReference Include="Cave.Settings" Version="1.0.2" />
     <PackageReference Include="nunit" Version="3.11.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.11.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.12.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Cave.WebServer\Cave.WebServer.csproj" />
   </ItemGroup>
-
 </Project>

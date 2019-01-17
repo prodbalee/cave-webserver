@@ -13,7 +13,7 @@ namespace Cave.Web
         /// <summary>Creates a message using the specified eWebException.</summary>
         /// <param name="ex">The eWebException.</param>
         /// <returns></returns>
-        public static WebMessage Create(WebException ex)
+        public static WebMessage Create(WebServerException ex)
         {
             return Create(ex.Source, ex.Message, error: ex.Error, code: ex.Code);
         }
@@ -107,10 +107,10 @@ namespace Cave.Web
         }
 
         /// <summary>Throws an exception for this instance if <see cref="Error"/> != <see cref="WebError.None"/>.</summary>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public void Throw()
         {
-            if (Error != WebError.None) { throw new WebException(this); }
+            if (Error != WebError.None) { throw new WebServerException(this); }
         }
     }
 }

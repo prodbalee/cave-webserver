@@ -3,8 +3,8 @@
     /// <summary>
     /// Provides exceptions for XAuth
     /// </summary>
-    /// <seealso cref="Cave.Web.WebException" />
-    public class XAuthException : WebException
+    /// <seealso cref="Cave.Web.WebServerException" />
+    public class XAuthException : WebServerException
     {
         /// <summary>The request</summary>
         public XmlRequest Request { get; }

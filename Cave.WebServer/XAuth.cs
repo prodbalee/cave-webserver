@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using Cave.Auth;
-using Cave.FileSystem;
 
 namespace Cave.Web
 {
@@ -38,7 +37,7 @@ namespace Cave.Web
             {
                 CheckSession();
             }
-            catch (WebException ex)
+            catch (WebServerException ex)
             {
                 switch (ex.Error)
                 {
@@ -118,7 +117,7 @@ namespace Cave.Web
         /// <param name="user">The user.</param>
         /// <param name="pass">The pass.</param>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public WebMessage CreateSession(string user, string pass)
         {
             lock (this)
@@ -140,7 +139,7 @@ namespace Cave.Web
 
         /// <summary>Closes the current session.</summary>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public WebMessage CloseSession()
         {
             lock (this)
@@ -185,7 +184,7 @@ namespace Cave.Web
         /// <param name="birthday">The birthday.</param>
         /// <param name="gender">The gender.</param>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public WebMessage CreateAccount(string user, string email, string firstname, string lastname, DateTime birthday, Gender gender)
         {
             lock (this)
@@ -206,7 +205,7 @@ namespace Cave.Web
         /// <summary>Requests a new password.</summary>
         /// <param name="email">The email.</param>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public WebMessage RequestNewPassword(string email)
         {
             lock (this)
@@ -225,7 +224,7 @@ namespace Cave.Web
         /// <summary>Gets a transaction key.</summary>
         /// <param name="url">The URL.</param>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public TransactionKey GetTransactionKey(string url)
         {
             lock (this)
@@ -245,7 +244,7 @@ namespace Cave.Web
 
         /// <summary>Gets the user details.</summary>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public FullUserDetails GetUserDetails()
         {
             lock (this)
@@ -279,7 +278,7 @@ namespace Cave.Web
         /// <summary>Performs a create group command.</summary>
         /// <param name="groupName">Name of the group.</param>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public XmlDeserializer GroupCreate(string groupName)
         {
             lock (this)
@@ -300,7 +299,7 @@ namespace Cave.Web
         /// <param name="groupID">The group identifier.</param>
         /// <param name="email">The email.</param>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public WebMessage GroupInviteUser(long groupID, string email)
         {
             lock (this)
@@ -320,7 +319,7 @@ namespace Cave.Web
         /// <summary>Performs a leave group command.</summary>
         /// <param name="groupID">The group identifier.</param>
         /// <returns></returns>
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebServerException"></exception>
         public WebMessage GroupLeave(long groupID)
         {
             lock (this)

@@ -17,7 +17,7 @@ namespace Cave.Web
         public static XNetDoc FromProgramPath()
         {
             XNetDoc result = new XNetDoc();
-            foreach (string file in Directory.GetFiles(Cave.FileSystem.FileSystem.ProgramDirectory, "*.*"))
+            foreach (string file in Directory.GetFiles(FileSystem.ProgramDirectory, "*.*"))
             {
                 if (Path.GetExtension(file).ToLower() == ".xml")
                 {

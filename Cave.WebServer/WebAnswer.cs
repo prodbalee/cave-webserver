@@ -23,7 +23,7 @@ namespace Cave.Web
         {
             return new WebAnswer()
             {
-                AllowCompression = request.AllowCompression,
+                AllowCompression = request?.AllowCompression == true,
                 Message = message,
                 StatusCode = message.Code,
                 ContentData = Encoding.UTF8.GetBytes(html),
@@ -42,7 +42,7 @@ namespace Cave.Web
         {
             return new WebAnswer()
             {
-                AllowCompression = request.AllowCompression,
+                AllowCompression = request?.AllowCompression == true,
                 Message = message,
                 StatusCode = message.Code,
                 ContentData = Encoding.UTF8.GetBytes(json),
@@ -61,7 +61,7 @@ namespace Cave.Web
         {
             return new WebAnswer()
             {
-                AllowCompression = request.AllowCompression,
+                AllowCompression = request?.AllowCompression == true,
                 Message = message,
                 StatusCode = message.Code,
                 ContentData = xml.ToArray(),
@@ -80,7 +80,7 @@ namespace Cave.Web
         {
             return new WebAnswer()
             {
-                AllowCompression = request.AllowCompression,
+                AllowCompression = request?.AllowCompression == true,
                 Message = message,
                 StatusCode = message.Code,
                 ContentData = Encoding.UTF8.GetBytes(utf8xml),
@@ -106,7 +106,7 @@ namespace Cave.Web
             }
             return new WebAnswer()
             {
-                AllowCompression = request.AllowCompression,
+                AllowCompression = request?.AllowCompression == true,
                 Message = message,
                 StatusCode = message.Code,
                 ContentData = data,
@@ -125,7 +125,7 @@ namespace Cave.Web
         {
             return new WebAnswer()
             {
-                AllowCompression = request.AllowCompression,
+                AllowCompression = request?.AllowCompression == true,
                 Message = message,
                 StatusCode = message.Code,
                 ContentData = Encoding.UTF8.GetBytes(content),
@@ -144,7 +144,7 @@ namespace Cave.Web
         {
             return new WebAnswer()
             {
-                AllowCompression = request.AllowCompression,
+                AllowCompression = request?.AllowCompression == true,
                 Message = message,
                 StatusCode = message.Code,
                 ContentData = data,
@@ -164,7 +164,7 @@ namespace Cave.Web
         {
             return new WebAnswer()
             {
-                AllowCompression = request.AllowCompression,
+                AllowCompression = request?.AllowCompression == true,
                 Message = message,
                 StatusCode = message.Code,
                 ContentData = data,

@@ -77,12 +77,12 @@ namespace Cave.Web
             Set<string> fullPaths = new Set<string>();
             foreach (string sub in PageAttribute.GetPaths())
             {
-                try { fullPaths.Add(Cave.FileSystem.FileSystem.Combine('/', path, sub)); }
+                try { fullPaths.Add(FileSystem.Combine('/', path, sub)); }
                 catch (Exception ex) { throw new InvalidDataException($"{sub} path cannot be added to method {Method.Name}", ex); }
             }
             if (fullPaths.Count == 0)
             {
-                try { fullPaths.Add(Cave.FileSystem.FileSystem.Combine('/', path, method.Name)); }
+                try { fullPaths.Add(FileSystem.Combine('/', path, method.Name)); }
                 catch (Exception ex) { throw new InvalidDataException($"{path} path cannot be added to method {Method.Name}", ex); }
             }
             FullPaths = fullPaths;
@@ -126,7 +126,7 @@ namespace Cave.Web
 
         /// <summary>Invokes the method using the specified data.</summary>
         /// <param name="data">The data.</param>
-        /// <exception cref="Cave.Web.WebException">
+        /// <exception cref="Cave.Web.WebServerException">
         /// Could not convert parameter {0} value {1} to type {2}
         /// or
         /// Function {0}\nParameter {1} is missing!
@@ -186,7 +186,7 @@ namespace Cave.Web
                         }
                         catch (Exception ex)
                         {
-                            throw new WebException(ex, WebError.InvalidParameters, 0, string.Format("Could not convert parameter {0} value {1} to type {2}", p.Name, value, p.ParameterType.Name));
+                            throw new WebServerException(ex, WebError.InvalidParameters, 0, string.Format("Could not convert parameter {0} value {1} to type {2}", p.Name, value, p.ParameterType.Name));
                         }
                         continue;
                     }
@@ -225,7 +225,7 @@ namespace Cave.Web
                     parameters.Add(null);
                     continue;
                 }
-                throw new WebException(WebError.InvalidParameters, 0, string.Format("Function {0}\nParameter {1} is missing!", this, p.Name));
+                throw new WebServerException(WebError.InvalidParameters, 0, string.Format("Function {0}\nParameter {1} is missing!", this, p.Name));
             }
 
             if (!PageAttribute.AllowAnyParameters)
@@ -236,7 +236,7 @@ namespace Cave.Web
                 }
                 if (usedParameters.Count > 0)
                 {
-                    throw new WebException(WebError.InvalidParameters, 0, string.Format("Function {0}\nParameter {1} is unknown!", this, usedParameters.First()));
+                    throw new WebServerException(WebError.InvalidParameters, 0, string.Format("Function {0}\nParameter {1} is unknown!", this, usedParameters.First()));
                 }
             }
 

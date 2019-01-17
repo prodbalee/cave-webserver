@@ -142,7 +142,7 @@ namespace Cave.Web
                     return WebMessage.Create(ex.Source, ex.Message, error: WebError.ClientError);
                 }
             }
-            catch (WebException ex)
+            catch (WebServerException ex)
             {
                 return WebMessage.Create(ex);
             }
@@ -198,7 +198,7 @@ namespace Cave.Web
                     return WebMessage.Create(ex.Source, ex.Message, error: WebError.ClientError);
                 }
             }
-            catch (WebException ex)
+            catch (WebServerException ex)
             {
                 return WebMessage.Create(ex);
             }

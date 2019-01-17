@@ -20,7 +20,7 @@ namespace Cave.Web
         /// <param name="firstLine">The first line.</param>
         /// <param name="client">The client.</param>
         /// <returns></returns>
-        /// <exception cref="Cave.Web.WebException">
+        /// <exception cref="Cave.Web.WebServerException">
         /// Malformed request {0}!
         /// or
         /// Command {0} is not supported!
@@ -44,7 +44,7 @@ namespace Cave.Web
             string[] parts = req.FirstLine.Split(' ');
             if (parts.Length != 3)
             {
-                throw new WebException(WebError.InvalidOperation, "Malformed request {0}!", req.FirstLine);
+                throw new WebServerException(WebError.InvalidOperation, "Malformed request {0}!", req.FirstLine);
             }
 
             req.Command = parts[0].Parse<WebCommand>();
@@ -55,13 +55,13 @@ namespace Cave.Web
                 case WebCommand.OPTIONS:
                 case WebCommand.POST:
                 case WebCommand.PUT: break;
-                default: throw new WebException(WebError.InvalidOperation, "Command {0} is not supported!", parts[0]);
+                default: throw new WebServerException(WebError.InvalidOperation, "Command {0} is not supported!", parts[0]);
             }
             switch (req.Protocol = parts[2])
             {
                 case "HTTP/1.0":
                 case "HTTP/1.1": break;
-                default: throw new WebException(WebError.InvalidOperation, "Protocol {0} is not supported!", parts[2]);
+                default: throw new WebServerException(WebError.InvalidOperation, "Protocol {0} is not supported!", parts[2]);
             }
             Dictionary<string, string> headers = new Dictionary<string, string>();
             while (true)
@@ -98,7 +98,7 @@ namespace Cave.Web
                 case "application/x-www-form-urlencoded": break;
                 case "application/octet-stream": break;
                 case "multipart/form-data": break;
-                default: throw new WebException(WebError.UnknownContent, 0, "Unknown content type!");
+                default: throw new WebServerException(WebError.UnknownContent, 0, "Unknown content type!");
             }
             int size = 0;
             {
@@ -145,7 +145,7 @@ namespace Cave.Web
                         data = buf.ToArray();
                         break;
                     default:
-                        throw new WebException(WebError.UnknownContent, 0, string.Format("Unknown transfer encoding {0}", transferEncoding));
+                        throw new WebServerException(WebError.UnknownContent, 0, string.Format("Unknown transfer encoding {0}", transferEncoding));
                 }
             }
             switch (contentTypeShort)
@@ -180,7 +180,7 @@ namespace Cave.Web
                         DecodeMultiPartFormData(contentType, client.Reader);
                     }
                     break;
-                default: throw new WebException(WebError.UnknownContent, 0, "Unknown content type!");
+                default: throw new WebServerException(WebError.UnknownContent, 0, "Unknown content type!");
             }
         }
 
@@ -252,7 +252,7 @@ namespace Cave.Web
                     }
                     catch
                     {
-                        throw new WebException(WebError.FunctionCallError, 0, string.Format("Parameter {0} cannot be decoded!", param));
+                        throw new WebServerException(WebError.FunctionCallError, 0, string.Format("Parameter {0} cannot be decoded!", param));
                     }
                 }
             }
@@ -297,13 +297,13 @@ namespace Cave.Web
         /// <summary>Decodes the form data.</summary>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="reader">The reader.</param>
-        /// <exception cref="Cave.Web.WebException">0 - MultiPart boundary missing!</exception>
+        /// <exception cref="Cave.Web.WebServerException">0 - MultiPart boundary missing!</exception>
         public void DecodeMultiPartFormData(string contentType, DataReader reader)
         {
             string boundary = contentType.AfterFirst("boundary").AfterFirst('"').BeforeFirst('"');
             if (boundary == null || boundary.HasInvalidChars(ASCII.Strings.Printable))
             {
-                throw new WebException(WebError.UnknownContent, 0, "MultiPart boundary missing!");
+                throw new WebServerException(WebError.UnknownContent, 0, "MultiPart boundary missing!");
             }
             MultiPartFormData = WebMultiPart.Parse(reader, boundary.Trim());
         }

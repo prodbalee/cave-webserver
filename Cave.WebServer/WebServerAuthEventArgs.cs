@@ -30,9 +30,10 @@ namespace Cave.Web
 
         /// <summary>Sets the authenticated flag to the request and the session.</summary>
         /// <param name="user">The user.</param>
+        /// <param name="flags">Used internally to define local host usage</param>
         /// <exception cref="InvalidOperationException">IsAuthenticated cannot be set twice!</exception>
         /// <remarks>This can only be used once per request. Once set this will throw an Exception on any further calls.</remarks>
-        public void SetAuthentication(User user, UserSessionFlags flags)
+        public void SetAuthentication(User user, UserSessionFlags flags = 0)
         {
             Data.Session.SetAuthentication(user, flags);
         }

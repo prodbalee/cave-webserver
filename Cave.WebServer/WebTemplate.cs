@@ -43,7 +43,7 @@ namespace Cave.Web
             lock (this)
             {
                 { //multi thread reload check
-                    DateTime lastChanged = Cave.FileSystem.FileSystem.GetLastWriteTimeUtc(FileName);
+                    DateTime lastChanged = FileSystem.GetLastWriteTimeUtc(FileName);
                     if (lastChanged == LastChanged)
                     {
                         return;
@@ -55,11 +55,11 @@ namespace Cave.Web
                 //read config
                 IniReader config = IniReader.FromFile(FileName);
                 {
-                    LastChanged = Cave.FileSystem.FileSystem.GetLastWriteTimeUtc(FileName);
+                    LastChanged = FileSystem.GetLastWriteTimeUtc(FileName);
                     int v = config.ReadInt32("CaveWebTemplate", "Version");
                     if (v != 1)
                     {
-                        throw new WebException(WebError.InternalServerError, 0, $"{FileName} invalid template version!");
+                        throw new WebServerException(WebError.InternalServerError, 0, $"{FileName} invalid template version!");
                     }
                 }
 
@@ -75,7 +75,7 @@ namespace Cave.Web
                         };
                         if (f.Method == null)
                         {
-                            throw new WebException(WebError.InternalServerError, 0, $"{FileName} invalid function call {function}!");
+                            throw new WebServerException(WebError.InternalServerError, 0, $"{FileName} invalid function call {function}!");
                         }
 
                         List<WebTemplateParameter> list = new List<WebTemplateParameter>();
@@ -154,7 +154,7 @@ namespace Cave.Web
             for (int i = 0; i < content.Length; i++)
             {
                 WebContentFile item = content[i];
-                DateTime lastChanged = Cave.FileSystem.FileSystem.GetLastWriteTimeUtc(item.FileName);
+                DateTime lastChanged = FileSystem.GetLastWriteTimeUtc(item.FileName);
                 if (lastChanged != item.LastChanged)
                 {
                     Trace.TraceInformation("Reloading content {0}", item.LastChanged);
@@ -216,7 +216,7 @@ namespace Cave.Web
             }
 
             { //need reload ?
-                DateTime lastChanged = Cave.FileSystem.FileSystem.GetLastWriteTimeUtc(FileName);
+                DateTime lastChanged = FileSystem.GetLastWriteTimeUtc(FileName);
                 if (lastChanged != LastChanged)
                 {
                     Reload();
@@ -256,7 +256,7 @@ namespace Cave.Web
                         if (!methodParameter.IsOptional)
                         {
                             //no value given and is not optional
-                            throw new WebException(WebError.InvalidParameters, $"Template error: Missing {methodParameter.Name} is not for function {function} is not set. Define {templateParameterName} at template call!");
+                            throw new WebServerException(WebError.InvalidParameters, $"Template error: Missing {methodParameter.Name} is not for function {function} is not set. Define {templateParameterName} at template call!");
                         }
                         continue;
                     }

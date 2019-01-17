@@ -17,14 +17,14 @@ namespace Cave.Web
             {
                 fileName = Path.Combine(mainFolder, url);
             }
-            if (!FileSystem.FileSystem.IsRelative(fileName, server.StaticFilesPath))
+            if (!FileSystem.IsRelative(fileName, server.StaticFilesPath))
             {
-                throw new WebException(WebError.InternalServerError, 0, $"Content file {fileName} is not relative to static folder path!");
+                throw new WebServerException(WebError.InternalServerError, 0, $"Content file {fileName} is not relative to static folder path!");
             }
             Trace.TraceInformation("Reloading content <cyan>{0}", url);
             this.Url = url;
             this.FileName = fileName;
-            LastChanged = FileSystem.FileSystem.GetLastWriteTimeUtc(fileName);
+            LastChanged = FileSystem.GetLastWriteTimeUtc(fileName);
             this.Content = File.ReadAllBytes(fileName);
         }
 

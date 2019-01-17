@@ -30,7 +30,7 @@ namespace Cave.Web
 
         /// <summary>Entry point for explain.</summary>
         /// <param name="data">The data.</param>
-        /// <exception cref="WebException">Error during explain.</exception>
+        /// <exception cref="WebServerException">Error during explain.</exception>
         public void Explain(WebData data)
         {
             string name = null, type = null;
@@ -55,13 +55,13 @@ namespace Cave.Web
             }
             catch (Exception ex)
             {
-                if (ex is WebException)
+                if (ex is WebServerException)
                 {
                     throw;
                 }
 
                 Trace.TraceError("Error during explain <cyan>{0} <magenta>{1}.", type, name);
-                throw new WebException(WebError.InternalServerError, 0, "Error during explain {0} {1}.", type, name);
+                throw new WebServerException(WebError.InternalServerError, 0, "Error during explain {0} {1}.", type, name);
             }
         }
 
@@ -69,7 +69,7 @@ namespace Cave.Web
         {
             if (!data.Server.RegisteredPaths.TryGetValue(name, out WebServerMethod function))
             {
-                throw new WebException(WebError.InvalidParameters, 0, "Unknown function or function not registered!");
+                throw new WebServerException(WebError.InvalidParameters, 0, "Unknown function or function not registered!");
             }
             ExplainFunction(data, function);
         }
@@ -163,7 +163,7 @@ namespace Cave.Web
             Type t = AppDom.FindType(name, AppDom.LoadMode.NoException);
             if (t == null)
             {
-                throw new WebException(WebError.InvalidParameters, 0, string.Format("Type {0} is unknown!", name));
+                throw new WebServerException(WebError.InvalidParameters, 0, string.Format("Type {0} is unknown!", name));
             }
 
             if (t != null)
@@ -179,7 +179,7 @@ namespace Cave.Web
                     return;
                 }
             }
-            throw new WebException(WebError.InvalidOperation, 0, string.Format("Type {0} cannot be explained!", name));
+            throw new WebServerException(WebError.InvalidOperation, 0, string.Format("Type {0} cannot be explained!", name));
         }
 
         void ExplainEnum(WebData data, Type t)
