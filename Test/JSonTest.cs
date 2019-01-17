@@ -15,22 +15,12 @@ namespace Test
             return new JsonReader(new string[1] { data });
         }
 
-
-        [Test]
-        public void ErrorTests()
-        {
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(string.Empty); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(" "); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{"); });
-            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("{ \"as }"); });
-        }
-
         [Test]
         public void BasicStringTests()
         {
             // string
-            Assert.AreEqual(string.Empty, (string)GetReader("\"\"").Root.Value);
-            Assert.AreEqual("TestString", (string)GetReader("\"TestString\"").Root.Value);
+            Assert.AreEqual(string.Empty, (string)GetReader("\"\"").Root.Value.ToString());
+            Assert.AreEqual("TestString", (string)GetReader("\"TestString\"").Root.Value.ToString());
         }
 
         [Test]
@@ -38,7 +28,13 @@ namespace Test
         {
             // number
             Assert.AreEqual(0, Convert.ToInt32(GetReader("0").Root.Value));
-            Assert.AreEqual(3.14, Convert.ToDouble(GetReader("3.14").Root.Value));
+            Assert.AreEqual(0, Convert.ToInt32(GetReader("-0").Root.Value));
+            Assert.AreEqual(3.14d, Convert.ToDouble(GetReader("3.14").Root.Value));
+            Assert.AreEqual(-0.56d, Convert.ToDouble(GetReader("-0.56").Root.Value));
+            Assert.AreEqual(100d, Convert.ToDouble(GetReader("1E2").Root.Value));
+            Assert.AreEqual(100d, Convert.ToDouble(GetReader("1e2").Root.Value));
+            Assert.AreEqual(1000d, Convert.ToDouble(GetReader("1E+3").Root.Value));
+            Assert.AreEqual(0.001d, Convert.ToDouble(GetReader("1E-3").Root.Value));
         }
 
         [Test]
@@ -50,9 +46,25 @@ namespace Test
             Assert.AreEqual(string.Empty, node.Name);
             Assert.AreEqual(null, node.Value);
 
-            node =  GetReader("{\"name\":\"value\"}").Root;
+            node = GetReader("{\"name\":\"value\"}").Root;
             Assert.AreEqual("name", node.Name);
             Assert.AreEqual("value", node.Value);
+
+            node = GetReader("{\"n1\":1,\"n2\":\"2\",\"n3\":true,\"n4\":false,\"n5\":null}").Root;
+            Assert.AreEqual(JsonNodeType.Object, node.Type);
+            Assert.AreEqual(5, node.SubNodes.Length);
+            Assert.AreEqual(1, Convert.ToInt32(node["n1"].Value));
+            Assert.AreEqual(1, Convert.ToInt32(node.SubNodes[0].Value));
+            Assert.AreEqual("2", node["n2"].Value.ToString());
+            Assert.AreEqual("2", node.SubNodes[1].Value.ToString());
+            Assert.AreEqual(true, node["n3"].Value);
+            Assert.AreEqual(true, node.SubNodes[2].Value);
+            Assert.AreEqual(false, node["n4"].Value);
+            Assert.AreEqual(false, node.SubNodes[3].Value);
+            Assert.AreEqual(null, node["n5"].Value);
+            Assert.AreEqual(null, node.SubNodes[4].Value);
+
+
         }
 
         [Test]
@@ -73,6 +85,85 @@ namespace Test
             {
                 Assert.AreEqual(i + 1, Convert.ToInt32(node.Values[i]));
             }
+        }
+
+        [Test]
+        public void NestedArrayTests()
+        {
+            // nested array
+            JsonNode node;
+            node = GetReader("[[[]]]").Root;
+            Assert.AreEqual(JsonNodeType.Array, node.Type);
+            Assert.AreEqual(1, node.Values.Length);
+            Assert.AreEqual(JsonNodeType.Array, node[0].Type);
+            Assert.AreEqual(1, node[0].Values.Length);
+            Assert.AreEqual(JsonNodeType.Array, node[0][0].Type);
+            Assert.AreEqual(0, node[0][0].Values.Length, 0);
+
+            node = GetReader("[[1,2,3],[4,5]]").Root;
+            Assert.AreEqual(JsonNodeType.Array, node.Type);
+            Assert.AreEqual(2, node.Values.Length);
+            Assert.AreEqual(JsonNodeType.Array, node[0].Type);
+            Assert.AreEqual(JsonNodeType.Array, node[1].Type);
+            Assert.AreEqual(3, node[0].Values.Length);
+            Assert.AreEqual(2, node[1].Values.Length);
+            Assert.AreEqual(1, Convert.ToInt32(node[0][0].Value));
+            Assert.AreEqual(2, Convert.ToInt32(node[0][1].Value));
+            Assert.AreEqual(3, Convert.ToInt32(node[0][2].Value));
+            Assert.AreEqual(4, Convert.ToInt32(node[1][0].Value));
+            Assert.AreEqual(5, Convert.ToInt32(node[1][1].Value));
+        }
+
+        [Test]
+        public void NestedObjectsTests()
+        {
+            // nested objects
+            JsonNode node;
+            node = GetReader("{\"a\":{},\"b\":{\"c\":1,\"d\":2}}").Root;
+            Assert.AreEqual(JsonNodeType.Object, node.Type);
+            Assert.AreEqual(2, node.SubNodes.Length);
+            Assert.AreEqual(JsonNodeType.Object, node["a"].Type);
+            Assert.AreEqual(0, node["a"].SubNodes.Length);
+            Assert.AreEqual(JsonNodeType.Object, node["b"].Type);
+            Assert.AreEqual(2, node["b"].SubNodes.Length);
+            Assert.AreEqual(1, Convert.ToInt32(node["b"]["c"].Value));
+            Assert.AreEqual(2, Convert.ToInt32(node["b"]["d"].Value));
+        }
+
+        [Test]
+        public void NestedMixedTests()
+        {
+            // mixed nested objects
+            JsonNode node;
+            node = GetReader("[true,1,\"2\",{\"3\" : \"drei\"},[\"vier\",5,[\"6\",{\"7\":8}]]]").Root;
+            Assert.AreEqual(JsonNodeType.Array, node.Type);
+            Assert.AreEqual(5, node.Values.Length);
+
+            Assert.AreEqual(JsonNodeType.Value, node[0].Type);
+            Assert.AreEqual(JsonNodeType.Value, node[1].Type);
+            Assert.AreEqual(JsonNodeType.Value, node[2].Type);
+            Assert.AreEqual(JsonNodeType.Object, node[3].Type);
+            Assert.AreEqual(JsonNodeType.Array, node[4].Type);
+
+            Assert.AreEqual(true, node[0].Value);
+            Assert.AreEqual(1, Convert.ToInt32(node[1].Value));
+            Assert.AreEqual("2", node[2].Value.ToString());
+
+            Assert.AreEqual(JsonNodeType.Value, node[3]["3"].Type);
+            Assert.AreEqual("drei", node[3]["3"].Value.ToString());
+
+            Assert.AreEqual(JsonNodeType.Value, node[4][0].Type);
+            Assert.AreEqual(JsonNodeType.Value, node[4][1].Type);
+            Assert.AreEqual(JsonNodeType.Array, node[4][2].Type);
+
+            Assert.AreEqual("vier", node[4][0].Value.ToString());
+            Assert.AreEqual(5, Convert.ToInt32(node[4][1].Value));
+
+            Assert.AreEqual(JsonNodeType.Value, node[4][2][0].Type);
+            Assert.AreEqual(JsonNodeType.Object, node[4][2][1].Type);
+
+            Assert.AreEqual("6", node[4][2][0].Value.ToString());
+            Assert.AreEqual(8, Convert.ToInt32(node[4][2][1]["7"].Value));
         }
 
         [Test]
@@ -130,5 +221,24 @@ namespace Test
             Assert.AreEqual(2, Convert.ToInt32(reader.Root["arr"][2].Value));
             Assert.AreEqual("v2", reader.Root["obj"]["o2"].Value);
         }
+
+        [Test]
+        public void ErrorTests()
+        {
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(string.Empty); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(" "); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("["); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("[,]"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("[1,]"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("a"); });
+            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("\""); });
+            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("\"a"); });
+            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("{\"a}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\"}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\":}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\":\"b\",}"); });
+        }
+
     }
 }
