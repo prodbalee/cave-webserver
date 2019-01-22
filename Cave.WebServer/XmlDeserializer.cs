@@ -210,15 +210,11 @@ namespace Cave.Web
 
         Type LoadType(string typeName, AppDom.LoadMode mode = AppDom.LoadMode.None)
         {
-            if (typeName.StartsWith("Cave.Auth."))
+            // typeload fix (old version)
+            if (typeName.StartsWith("Cave.Web.Auth."))
             {
-                typeName = typeName.Replace("Cave.Auth.", "Cave.Web.Auth.");
-            }
-
-            if (!typeName.Contains("CaveWeb"))
-            {
-                typeName = typeName.Replace("eWeb", "CaveWeb");
-            }
+                typeName = typeName.Replace("Cave.Web.Auth.", "Cave.Auth.");
+            }            
 
             return AppDom.FindType(typeName, mode);
         }

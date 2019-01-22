@@ -3,9 +3,9 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <IsPackable>false</IsPackable>
     <StartupObject>Test.Program</StartupObject>
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
-    <FileVersion>2019.117.1244.842</FileVersion>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <FileVersion>2019.122.1932.21</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Cave.Extensions" Version="1.0.2" />
