@@ -6,6 +6,7 @@ using Cave.Auth;
 using Cave.Data;
 using Cave.Net;
 using Cave.Web;
+using Cave.Web.Auth;
 using NUnit.Framework;
 
 namespace Test
@@ -19,6 +20,15 @@ namespace Test
             public long ID;
             [Field]
             public string Value;
+        }
+
+        public enum UserLevel
+        {
+            /// <summary>The user flag</summary>
+            User = 0,
+
+            /// <summary>The admin flag</summary>
+            Admin = 0x1000,
         }
 
         class TestPages
@@ -55,6 +65,8 @@ namespace Test
             Server.EnableFileListing = true;
             Server.SessionMode = WebServerSessionMode.Cookie;
 
+            Server.TransmitLayout = false;
+
             User user;
             EmailAddress email;
 
@@ -63,6 +75,11 @@ namespace Test
             Server.StaticFilesPath = Directory.GetCurrentDirectory();
 
             Server.Register(new TestPages());
+
+            var authInterface = new AuthInterface<UserLevel>(Server);
+            Server.Register(authInterface);
+
+            //(Server.Register(Auth)
 
             Server.Listen(8080);
         }
@@ -104,6 +121,23 @@ namespace Test
             Assert.AreEqual("teststring", data.Value);
 
         }
+
+        [Test]
+        public void GetSession()
+        {
+            HttpWebRequest request = System.Net.WebRequest.CreateHttp("http://localhost:8080/auth/session");
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Test]
+        public void GetSessionXML()
+        {
+            XmlRequest request = XmlRequest.Prepare("http://localhost:8080", "auth/session");
+            WebMessage message = request.Get();
+            Assert.AreEqual(HttpStatusCode.OK, message.Code);
+        }
+
 
         [Test]
         public void BasicAuth()
