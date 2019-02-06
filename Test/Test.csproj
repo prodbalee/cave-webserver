@@ -1,8 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFrameworks>net461</TargetFrameworks>
     <IsPackable>false</IsPackable>
-    <StartupObject>Test.Program</StartupObject>
     <Version>1.0.1</Version>
     <AssemblyVersion>1.0.1</AssemblyVersion>
     <FileVersion>2019.122.1932.21</FileVersion>
