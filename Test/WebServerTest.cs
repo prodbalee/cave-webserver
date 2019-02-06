@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net;
 using System.Threading;
+using Cave.Net;
 using Cave.Web;
 using NUnit.Framework;
 
@@ -8,29 +9,50 @@ namespace Test
 {
     public class WebServerTest
     {
-        [Test]
-        public void Test1()
+        class TestPages
         {
-            WebServer server = new WebServer();
-            
-            server.EnableExplain = true;
-            server.EnableFileListing = true;
-            server.SessionMode = WebServerSessionMode.Cookie;
-
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "html");
-            for (int i = 0; i < 3 && !Directory.Exists(path); i++)
+            [WebPage(Paths ="testpage")]
+            public void TestPage(WebData webData)
             {
-                path = Path.GetFullPath(Path.Combine(path, "..", "..", "html"));
+                webData.Result.AddMessage(webData.Method, "Test Page success");
             }
-            if (!Directory.Exists(path)) throw new DirectoryNotFoundException();
-            server.StaticFilesPath = path;
 
-            server.Listen(8080);
+            [WebPage(Paths = "testecho")]
+            public void TestEcho(WebData webData, string value)
+            {
+                webData.Result.AddMessage(webData.Method, "Echo success: ", value);
+            }
 
-            var client = new WebClient();
-            var data = client.DownloadData("http://localhost:8080");
+        }
 
-            server.Close();
+        public WebServer Server { get; private set; }
+
+        public WebServerTest()
+        {
+            Server = new WebServer();
+            Server.EnableExplain = true;
+            Server.EnableFileListing = true;
+            Server.SessionMode = WebServerSessionMode.Cookie;
+
+            Server.StaticFilesPath = Directory.GetCurrentDirectory();
+
+            Server.Register(new TestPages());
+
+            Server.Listen(8080);
+        }
+
+        ~WebServerTest()
+        {
+            Server.Close();
+        }
+
+
+        [Test]
+        public void GetIndex()
+        {
+            HttpWebRequest request = System.Net.WebRequest.CreateHttp("http://localhost:8080");
+            HttpWebResponse response = (HttpWebResponse) request.GetResponse();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         }
     }
 }
