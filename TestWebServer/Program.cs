@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using Cave;
 using Cave.Web;
@@ -18,6 +19,7 @@ namespace TestWebServer
 
         static void Main(string[] args)
         {
+            Trace.Listeners.Add(new ConsoleTraceListener());
             new Program().Run();
         }
 
