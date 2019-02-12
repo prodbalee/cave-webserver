@@ -94,8 +94,10 @@ namespace Test
         public void GetIndex()
         {
             HttpWebRequest request = System.Net.WebRequest.CreateHttp("http://localhost:8080");
+            request.UserAgent = "TestWebServer_Client";
             HttpWebResponse response = (HttpWebResponse) request.GetResponse();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            response.Close();
         }
 
         [Test]
@@ -126,8 +128,10 @@ namespace Test
         public void GetSession()
         {
             HttpWebRequest request = System.Net.WebRequest.CreateHttp("http://localhost:8080/auth/session");
+            request.UserAgent = "TestWebServer_Client";
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            response.Close();
         }
 
         [Test]
@@ -144,9 +148,11 @@ namespace Test
         {
             string authdata = "Basic " + Base64.Default.Encode("user:password");
             HttpWebRequest request = System.Net.WebRequest.CreateHttp("http://localhost:8080/basicauth");
+            request.UserAgent = "TestWebServer_Client";
             request.Headers.Add("Authorization", authdata);
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            response.Close();
         }
     }
 }
