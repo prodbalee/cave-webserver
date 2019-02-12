@@ -79,13 +79,13 @@
     <PackageReference Include="Cave.Collections" Version="1.0.1" />
     <PackageReference Include="Cave.Compression" Version="1.0.0" />
     <PackageReference Include="Cave.CRC" Version="1.0.0" />
-    <PackageReference Include="Cave.Extensions" Version="1.0.2" />
+    <PackageReference Include="Cave.Extensions" Version="1.0.3" />
     <PackageReference Include="Cave.FileSystem" Version="1.1.0" />
-    <PackageReference Include="Cave.IO" Version="1.0.1" />
-    <PackageReference Include="Cave.Media" Version="1.0.0" />
-    <PackageReference Include="Cave.Net" Version="1.0.1" />
+    <PackageReference Include="Cave.IO" Version="1.0.2" />
+    <PackageReference Include="Cave.Media" Version="1.0.1" />
+    <PackageReference Include="Cave.Net" Version="1.0.2" />
     <PackageReference Include="Cave.Settings" Version="1.0.2" />
-    <PackageReference Include="Cave.TcpServer" Version="1.0.2" />
+    <PackageReference Include="Cave.TcpServer" Version="1.0.4" />
     <PackageReference Include="Cave.Data" Version="1.0.1" />
     <PackageReference Include="Cave.Auth" Version="1.0.0" />
   </ItemGroup>

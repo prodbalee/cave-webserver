@@ -33,11 +33,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Cave.Extensions" Version="1.0.2" />
+    <PackageReference Include="Cave.Extensions" Version="1.0.3" />
     <PackageReference Include="Cave.Settings" Version="1.0.2" />
     <PackageReference Include="nunit" Version="3.11.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.12.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0-preview-20190203-03" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cave.WebServer\Cave.WebServer.csproj" />
