@@ -6,9 +6,9 @@
     <RootNamespace>Test</RootNamespace>
     <AssemblyName>Test</AssemblyName>
     <IsPackable>false</IsPackable>
-    <Version>1.0.1</Version>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>2019.122.1932.21</FileVersion>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <FileVersion>2019.212.2211.3988</FileVersion>
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject />

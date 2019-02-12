@@ -91,12 +91,9 @@ namespace Cave.Web
                         Type type = LoadType(element.Value, AppDom.LoadMode.NoException);
                         if (type == null)
                         {
-                            Trace.TraceWarning("RowType {0} cannot be loaded!", element.Value);
+                            throw new TypeLoadException(string.Format("RowType {0} cannot be loaded!", element.Value));
                         }
-                        else
-                        {
-                            typedLayout = RowLayout.CreateTyped(type, name);
-                        }
+                        typedLayout = RowLayout.CreateTyped(type, name);
                         if (layout != null && typedLayout != null)
                         {
                             RowLayout.CheckLayout(typedLayout, layout);
@@ -121,7 +118,7 @@ namespace Cave.Web
                         {
                             if (layout == null && typedLayout == null)
                             {
-                                throw new InvalidDataException("At least one of Layout or RowType need to precede rows!");
+                                throw new InvalidDataException($"At least one of Layout or RowType need to precede rows!");
                             }
 
                             table = new MemoryTable(typedLayout ?? layout);
