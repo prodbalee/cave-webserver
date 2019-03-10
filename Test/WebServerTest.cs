@@ -1,10 +1,9 @@
+using System;
 using System.IO;
 using System.Net;
-using System.Threading;
 using Cave;
 using Cave.Auth;
 using Cave.Data;
-using Cave.Net;
 using Cave.Web;
 using Cave.Web.Auth;
 using NUnit.Framework;
@@ -16,11 +15,90 @@ namespace Test
         [Table]
         struct TestData
         {
-            [Field(Flags =Cave.FieldFlags.ID)]
+            [Field(Flags = Cave.FieldFlags.ID)]
             public long ID;
+
+            // string
             [Field]
-            public string Value;
+            public string vString;
+
+            // unsigned
+            [Field]
+            public byte vByte;
+
+            [Field]
+            public ushort vUShort;
+
+            [Field]
+            public uint vUInt;
+
+            [Field]
+            public ulong vULong;
+
+            // signed values
+            [Field]
+            public sbyte vSByte;
+
+            [Field]
+            public short vShort;
+
+            [Field]
+            public int vInt;
+
+            [Field]
+            public long vLong;
+
+            // other types
+            [Field]
+            public bool vBool;
+
+            [Field]
+            public DateTime vDateTime;
+
+            [Field]
+            public TimeSpan vTimeSpan;
         }
+
+        static TestData TestDataMin()
+        {
+            return new TestData
+            {
+                ID = 1,
+                vString = string.Empty,
+                vByte = byte.MinValue,
+                vUShort = ushort.MinValue,
+                vUInt = uint.MinValue,
+                vULong = ulong.MinValue,
+                vSByte = sbyte.MinValue,
+                vShort = short.MinValue,
+                vInt = int.MinValue,
+                vLong = long.MinValue,
+                vBool = false,
+                vDateTime = DateTime.MinValue,
+                vTimeSpan = TimeSpan.MinValue,
+            };
+        }
+
+        static TestData TestDataMax()
+        {
+            return new TestData
+            {
+                ID = long.MaxValue,
+                vString = "MAX",
+                vByte = byte.MaxValue,
+                vUShort = ushort.MaxValue,
+                vUInt = uint.MaxValue,
+                vULong = ulong.MaxValue,
+                vSByte = sbyte.MaxValue,
+                vShort = short.MaxValue,
+                vInt = int.MaxValue,
+                vLong = long.MaxValue,
+                vBool = true,
+                vDateTime = DateTime.MaxValue,
+                vTimeSpan = TimeSpan.MaxValue,
+            };
+        }
+
 
         public enum UserLevel
         {
@@ -33,7 +111,7 @@ namespace Test
 
         class TestPages
         {
-            [WebPage(Paths ="testpage")]
+            [WebPage(Paths = "testpage")]
             public void TestPage(WebData webData)
             {
                 webData.Result.AddMessage(webData.Method, "Test Page success");
@@ -43,16 +121,26 @@ namespace Test
             public void TestEcho(WebData webData, string value)
             {
                 webData.Result.AddMessage(webData.Method, "Echo success");
-                TestData td = new TestData { ID = 1,  Value = value};
-                webData.Result.AddStruct<TestData>(td);
+                webData.Result.AddMessage("value", value);
             }
 
-            [WebPage(Paths = "basicauth", AuthType =WebServerAuthType.Basic)]
+            [WebPage(Paths = "testdata")]
+            public void TestData(WebData webData, string structtype = null)
+            {
+                webData.Result.AddMessage(webData.Method, "Test Struct success");
+                TestData t = TestDataMin();
+                if (structtype == "max")
+                {
+                    t = TestDataMax();
+                }
+                webData.Result.AddStruct(t);
+            }
+
+            [WebPage(Paths = "basicauth", AuthType = WebServerAuthType.Basic)]
             public void TestBasicAuth(WebData webData)
             {
                 webData.Result.AddMessage(webData.Method, "Basic Auth success: ");
             }
-
 
         }
 
@@ -77,9 +165,7 @@ namespace Test
             Server.Register(new TestPages());
 
             var authInterface = new AuthInterface<UserLevel>(Server);
-            Server.Register(authInterface);
-
-            //(Server.Register(Auth)
+            Server.Register(authInterface);            
 
             Server.Listen(8080);
         }
@@ -95,7 +181,7 @@ namespace Test
         {
             HttpWebRequest request = System.Net.WebRequest.CreateHttp("http://localhost:8080");
             request.UserAgent = "TestWebServer_Client";
-            HttpWebResponse response = (HttpWebResponse) request.GetResponse();
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             response.Close();
         }
@@ -115,13 +201,34 @@ namespace Test
             XmlRequest request = XmlRequest.Prepare("http://localhost:8080", "testecho", "value=teststring");
             WebMessage message = request.Get();
             Assert.AreEqual(HttpStatusCode.OK, message.Code);
-            Assert.AreEqual("Echo success", message.Content);
+            Assert.AreEqual("value", message.Source);
+            Assert.AreEqual("teststring", message.Content);
+        }
+
+        [Test]
+        public void GetTestStructMinXML()
+        {
+            XmlRequest request = XmlRequest.Prepare("http://localhost:8080", "testdata", "structtype=min");
+            WebMessage message = request.Get();
+            Assert.AreEqual(HttpStatusCode.OK, message.Code);
             var dataTable = request.Result.GetTable<TestData>();
             Assert.AreEqual(1, dataTable.RowCount);
-            TestData data = dataTable.GetStruct("ID", 1);
-            Assert.AreEqual(1, data.ID);
-            Assert.AreEqual("teststring", data.Value);
+            TestData data = dataTable.GetStruct(dataTable.IDs[0]);
+            TestData mindata = TestDataMin();
+            Assert.True(data.Equals(mindata));
+        }
 
+        [Test]
+        public void GetTestStructMaxXML()
+        {
+            XmlRequest request = XmlRequest.Prepare("http://localhost:8080", "testdata", "structtype=max");
+            WebMessage message = request.Get();
+            Assert.AreEqual(HttpStatusCode.OK, message.Code);
+            var dataTable = request.Result.GetTable<TestData>();
+            Assert.AreEqual(1, dataTable.RowCount);
+            TestData data = dataTable.GetStruct(dataTable.IDs[0]);
+            TestData mindata = TestDataMax();
+            Assert.True(data.Equals(mindata));
         }
 
         [Test]
@@ -141,7 +248,6 @@ namespace Test
             WebMessage message = request.Get();
             Assert.AreEqual(HttpStatusCode.OK, message.Code);
         }
-
 
         [Test]
         public void BasicAuth()
