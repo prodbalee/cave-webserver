@@ -325,11 +325,11 @@ namespace Cave.Web
 
         /// <summary>Gets the headers.</summary>
         /// <value>The headers.</value>
-        public ReadOnlyDictionary<string, string> Headers { get; private set; }
+        public IDictionary<string, string> Headers { get; private set; }
 
         /// <summary>Gets the parameters.</summary>
         /// <value>The parameters.</value>
-        public ReadOnlyDictionary<string, string> Parameters { get; internal set; }
+        public IDictionary<string, string> Parameters { get; internal set; }
 
         /// <summary>Gets the command.</summary>
         /// <value>The command.</value>

@@ -67,7 +67,7 @@ namespace Cave.Web
 
         /// <summary>Gets the response headers.</summary>
         /// <value>The response headers.</value>
-        public ReadOnlyDictionary<string, string> ResponseHeaders { get; private set; }
+        public IDictionary<string, string> ResponseHeaders { get; private set; }
 
         /// <summary>Gets or sets the credentials.</summary>
         /// <value>The credentials.</value>

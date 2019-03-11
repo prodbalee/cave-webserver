@@ -1,53 +1,49 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
-    <!--netstandard2.0;net35;-->
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <TargetFrameworks>netstandard2.0;net45;net46;net47</TargetFrameworks>
     <Authors>Andreas Rohleder</Authors>
     <Company>CaveSystems GmbH, Andreas Rohleder</Company>
-    <Product>CaveSystems Web Library</Product>
-    <Copyright>(c) 2003-2018 Andreas Rohleder</Copyright>
-    <PackageLicenseUrl>https://www.gnu.org/licenses/lgpl-3.0.en.html</PackageLicenseUrl>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Cave.WebServer.snk</AssemblyOriginatorKeyFile>
-    <Version>1.0.1</Version>
+    <Copyright>(c) 2003-$([System.DateTime]::UtcNow.Year) Andreas Rohleder</Copyright>
     <PackageIconUrl>https://www.cavesystems.de/favicon.ico</PackageIconUrl>
-    <PackageTags>CaveSystems Web</PackageTags>
-    <PackageProjectUrl>https://www.cavesystems.de</PackageProjectUrl>
-    <PackageReleaseNotes>Aktueller Release Candidate 2018</PackageReleaseNotes>
-    <Description>Komplette CaveSystems Bibliothek</Description>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\Cave.WebServer.xml</DocumentationFile>
+    <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <FileVersion>$([System.DateTime]::UtcNow.Year).$([System.DateTime]::UtcNow.ToString("MMdd")).$([System.DateTime]::UtcNow.ToString("HHmm")).$([System.DateTime]::UtcNow.ToString("ssfff"))</FileVersion>
+    <LangVersion>latest</LangVersion>
+    <!--project-->
+    <RootNamespace>Cave.Web</RootNamespace>
+    <AssemblyOriginatorKeyFile>Cave.WebServer.snk</AssemblyOriginatorKeyFile>
+    <Product>CaveSystems WebServer Library</Product>
+    <PackageTags>CaveSystems WebServer</PackageTags>
+    <Description>CaveSystems WebServer Bibliothek.</Description>
+    <PackageProjectUrl>https://github.com/CaveSystems/cave-base-x</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CaveSystems/cave-base-x</RepositoryUrl>
+    <!--settings-->
+    <PackageReleaseNotes />
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <SignAssembly>true</SignAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>2019.122.1932.21</FileVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NeutralLanguage />
+    <DelaySign>false</DelaySign>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSymbolsInPackage>true</IncludeSymbolsInPackage>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <Deterministic>true</Deterministic>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;</DefineConstants>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <IncludeSymbols>true</IncludeSymbols>
-    <IncludeSymbolsInPackage>true</IncludeSymbolsInPackage>
-    <EmbedSources>true</EmbedSources>
   </PropertyGroup>
-  <!-- Workaround for EmbedSources support, see https://github.com/dotnet/roslyn/issues/19127-->
-  <Target Condition="'$(Configuration)'=='Debug'" Name="PopulateEmbeddedFiles" AfterTargets="BeforeCompile" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <EmbeddedFiles Include="@(Compile)" />
-    </ItemGroup>
-  </Target>
   <PropertyGroup>
     <DefineConstants Condition=" !$(DefineConstants.Contains(';NET')) ">$(DefineConstants);NET$(TargetFramework.ToUpper().Replace("_", "").Replace(".", "").Replace("NET", ""))</DefineConstants>
     <DefineConstants Condition=" $(DefineConstants.Contains(';NET')) ">$(DefineConstants.Remove($(DefineConstants.LastIndexOf(";NET"))));NET$(TargetFramework.ToUpper().Replace("_", "").Replace(".", "").Replace("NET", ""))</DefineConstants>
-    <NeutralLanguage />
-    <RootNamespace>Cave.Web</RootNamespace>
-    <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net40' OR '$(TargetFramework)'=='net45' OR '$(TargetFramework)'=='net46' OR '$(TargetFramework)'=='net471'">
     <Reference Include="System" />
@@ -67,27 +63,26 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)'=='net20' OR '$(TargetFramework)'=='netstandard1.3'">
-    <PackageReference Include="Cave.Backports" Version="1.0.0-alpha-release-1" />
+    <PackageReference Include="Cave.Backports" Version="1.0.5" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Cave.AssemblyVersionInfo" Version="1.0.0" />
-    <PackageReference Include="Cave.Collections" Version="1.0.1" />
-    <PackageReference Include="Cave.Compression" Version="1.0.0" />
-    <PackageReference Include="Cave.CRC" Version="1.0.0" />
-    <PackageReference Include="Cave.Extensions" Version="1.0.2" />
-    <PackageReference Include="Cave.FileSystem" Version="1.1.0" />
-    <PackageReference Include="Cave.IO" Version="1.0.1" />
-    <PackageReference Include="Cave.Media" Version="1.0.0" />
-    <PackageReference Include="Cave.Net" Version="1.0.1" />
-    <PackageReference Include="Cave.Settings" Version="1.0.2" />
-    <PackageReference Include="Cave.TcpServer" Version="1.0.2" />
-    <PackageReference Include="Cave.Data" Version="1.0.1" />
-    <PackageReference Include="Cave.Auth" Version="1.0.0" />
+    <PackageReference Include="Cave.AssemblyVersionInfo" Version="1.0.2" />
+    <PackageReference Include="Cave.Collections" Version="1.0.2" />
+    <PackageReference Include="Cave.Compression" Version="1.0.1" />
+    <PackageReference Include="Cave.CRC" Version="1.0.1" />
+    <PackageReference Include="Cave.Extensions" Version="1.0.6" />
+    <PackageReference Include="Cave.FileSystem" Version="1.1.1" />
+    <PackageReference Include="Cave.IO" Version="1.0.5" />
+    <PackageReference Include="Cave.Media" Version="1.0.3" />
+    <PackageReference Include="Cave.Net" Version="1.0.4" />
+    <PackageReference Include="Cave.Settings" Version="1.0.3" />
+    <PackageReference Include="Cave.Data" Version="1.0.5" />
+    <PackageReference Include="Cave.Auth" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="C:\Users\andreas.CAVE\.nuget\packages\cave.media\1.0.0\contentFiles\any\net45\Cave.Media.dll.config">

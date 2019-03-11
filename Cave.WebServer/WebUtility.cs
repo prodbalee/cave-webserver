@@ -29,7 +29,7 @@ namespace System.Net
 		}
 	}
 }
-#elif NETSTANDARD20 || NET40 || NET45 || NET46 || NET471
+#elif NETSTANDARD20 || NET40 || NET45 || NET46 || NET47
 #else
 #error No code defined for the current framework or NETXX version define missing!
 #endif

@@ -227,9 +227,9 @@ namespace Cave.Web
             data.Result.TransmitLayout = false;
 
             //call functions
-            ReadOnlyDictionary<string, string> templateParameters = data.Request.Parameters;
-            Set<string> tables = new Set<string>();
-            List<WebTemplateParameter> parameterDescription = new List<WebTemplateParameter>();
+            var templateParameters = data.Request.Parameters;
+            var tables = new Set<string>();
+            var parameterDescription = new List<WebTemplateParameter>();
             for (int i = 0; i < Functions.Length; i++)
             {
                 Func function = Functions[i];

@@ -8,13 +8,14 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>TestWebServer</RootNamespace>
     <AssemblyName>TestWebServer</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <Version>1.0.1</Version>
     <AssemblyVersion>1.0.1</AssemblyVersion>
     <FileVersion>2019.122.1932.21</FileVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,6 +35,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>TestWebServer.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -127,11 +131,41 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Cave.Extensions">
+    <PackageReference Include="Cave.AssemblyVersionInfo">
       <Version>1.0.2</Version>
     </PackageReference>
-    <PackageReference Include="Cave.Settings">
+    <PackageReference Include="Cave.Auth">
+      <Version>1.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.Collections">
       <Version>1.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.Compression">
+      <Version>1.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.CRC">
+      <Version>1.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.Data">
+      <Version>1.0.5</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.Extensions">
+      <Version>1.0.6</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.FileSystem">
+      <Version>1.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.IO">
+      <Version>1.0.5</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.Media">
+      <Version>1.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.Net">
+      <Version>1.0.4</Version>
+    </PackageReference>
+    <PackageReference Include="Cave.Settings">
+      <Version>1.0.3</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

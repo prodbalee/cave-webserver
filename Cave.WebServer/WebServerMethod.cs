@@ -95,7 +95,7 @@ namespace Cave.Web
                     {
                         continue;
                     }
-#if NET45 || NET46 || NET471 || NETSTANDARD20
+#if NET45 || NET46 || NET47 || NETSTANDARD20
                     if (p.HasDefaultValue)
 #elif NET20 || NET35 || NET40
 #else

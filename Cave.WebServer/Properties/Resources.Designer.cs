@@ -19,10 +19,10 @@ namespace Cave.Web.Properties {
     // -Klasse über ein Tool wie ResGen oder Visual Studio automatisch generiert.
     // Um einen Member hinzuzufügen oder zu entfernen, bearbeiten Sie die .ResX-Datei und führen dann ResGen
     // mit der /str-Option erneut aus, oder Sie erstellen Ihr VS-Projekt neu.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace Cave.Web.Properties {
         ///   Gibt die zwischengespeicherte ResourceManager-Instanz zurück, die von dieser Klasse verwendet wird.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Cave.Web.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace Cave.Web.Properties {
         ///   Ressourcenzuordnungen, die diese stark typisierte Ressourcenklasse verwenden.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -71,7 +71,7 @@ namespace Cave.Web.Properties {
         ///alto-costmap+json,application/alto-costmap+json,[RFC7285]
         ///alto-costmapfilter+json,application/alto-costmapfilter+json,[R [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string application {
+        public static string application {
             get {
                 return ResourceManager.GetString("application", resourceCulture);
             }
@@ -94,7 +94,7 @@ namespace Cave.Web.Properties {
         ///ATRAC3,audio/ATRAC3,[RFC5584]
         ///basic,a [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string audio {
+        public static string audio {
             get {
                 return ResourceManager.GetString("audio", resourceCulture);
             }
@@ -109,7 +109,7 @@ namespace Cave.Web.Properties {
         ///&lt;p&gt;If you want to validate the account and activate it please use the following link: &lt;a href=&quot;$Server/VerifyEmail?email=$EmailAddress&amp;amp;code=$Code&quot;&gt;Verification Link&lt;/a&gt;&lt;/p&gt;
         ///&lt;p&gt;If the link does not work for some reason you can go to &lt;a href=&quot;$Server/Verify&quot;&gt;$Server/Verify&lt;/a&gt; [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string AuthMessages {
+        public static string AuthMessages {
             get {
                 return ResourceManager.GetString("AuthMessages", resourceCulture);
             }
@@ -120,7 +120,7 @@ namespace Cave.Web.Properties {
         ///&lt;script src=&quot;https://code.jquery.com/jquery-3.1.1.slim.min.js&quot; integrity=&quot;sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n&quot; crossorigin=&quot;anonymous&quot;&gt;&lt;/script&gt;
         ///&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js&quot; integrity=&quot;sha384-DztdAPBWPRX [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string CaveWebServerHeaders {
+        public static string CaveWebServerHeaders {
             get {
                 return ResourceManager.GetString("CaveWebServerHeaders", resourceCulture);
             }
@@ -136,7 +136,7 @@ namespace Cave.Web.Properties {
         ///woff2,font/woff2,[RFC8081]
         /// ähnelt.
         /// </summary>
-        internal static string font {
+        public static string font {
             get {
                 return ResourceManager.GetString("font", resourceCulture);
             }
@@ -159,7 +159,7 @@ namespace Cave.Web.Properties {
         ///jpm,image/jpm,,[RFC3745]
         ///jpx [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string image {
+        public static string image {
             get {
                 return ResourceManager.GetString("image", resourceCulture);
             }
@@ -178,7 +178,7 @@ namespace Cave.Web.Properties {
         ///global-disposition-notification,message/global-disposition-notification,[RFC6533]
         ///global-headers,message/global-header [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string message {
+        public static string message {
             get {
                 return ResourceManager.GetString("message", resourceCulture);
             }
@@ -199,7 +199,7 @@ namespace Cave.Web.Properties {
         ///vnd.gtw,model/vnd.gtw,[Yutaka_Ozaki]
         ///vnd.moml+xml [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string model {
+        public static string model {
             get {
                 return ResourceManager.GetString("model", resourceCulture);
             }
@@ -221,7 +221,7 @@ namespace Cave.Web.Properties {
         ///report,multipart/report,[RFC6522]
         ///signed,multipart/signed,[RFC1847] [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string multipart {
+        public static string multipart {
             get {
                 return ResourceManager.GetString("multipart", resourceCulture);
             }
@@ -240,7 +240,7 @@ namespace Cave.Web.Properties {
         ///ecmascript - OBSOLETED in favor of application/ecmascript,text/ecmascript,[RFC4329]
         ///encaprtp,text/encaprtp,[RFC6 [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string text {
+        public static string text {
             get {
                 return ResourceManager.GetString("text", resourceCulture);
             }
@@ -264,7 +264,7 @@ namespace Cave.Web.Properties {
         ///H263-2000,video/H263-2000,[RFC4629]
         ///H264,vide [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
-        internal static string video {
+        public static string video {
             get {
                 return ResourceManager.GetString("video", resourceCulture);
             }
