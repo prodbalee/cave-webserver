@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
-using System.IO;
 using System.Threading;
-using Cave;
 using Cave.Web;
 using Test;
 
@@ -24,7 +22,7 @@ namespace TestWebServer
         }
 
         void Run()
-        {            
+        {
             WebServerTest server = new WebServerTest();
             server.Server.Register(this);
             exit.WaitOne();

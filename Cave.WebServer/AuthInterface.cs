@@ -118,7 +118,7 @@ namespace Cave.Web.Auth
         public void GetUserList(WebData data)
         {
             data.Result.AddMessage(data.Method, "Userlist retrieved.");
-            List<User> users = data.Server.AuthTables.Users.GetStructs();
+            var users = data.Server.AuthTables.Users.GetStructs();
             data.Result.AddStructs(users.Select(u => u.ClearPrivateFields()));
             data.Result.AddTable(data.Server.AuthTables.EmailAddresses);
         }
@@ -216,8 +216,8 @@ namespace Cave.Web.Auth
             AuthTables authTables = data.Server.AuthTables;
             User user = authTables.Users.GetStruct(userID);
             authTables.UserDetails.TryGetStruct(user.ID, out UserDetail userDetail); userDetail.UserID = user.ID;
-            List<GroupMember> groupMember = authTables.GroupMembers.GetStructs(nameof(GroupMember.UserID), user.ID);
-            List<Group> groups = authTables.Groups.GetStructs(groupMember.Select(m => m.GroupID).ToArray());
+            var groupMember = authTables.GroupMembers.GetStructs(nameof(GroupMember.UserID), user.ID);
+            var groups = authTables.Groups.GetStructs(groupMember.Select(m => m.GroupID).ToArray());
 
             //get licenses and transfer without certificate data
             List<License> licenses = new List<License>();
@@ -230,11 +230,11 @@ namespace Cave.Web.Auth
                 licenses[i] = l;
             }
 
-            List<PhoneNumber> phoneNumbers = authTables.PhoneNumbers.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            List<EmailAddress> emailAddresses = authTables.EmailAddresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            List<Address> addresses = authTables.Addresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            List<UserSessionLicense> userSessionLicenses = authTables.UserSessionLicenses.GetStructs(Search.FieldIn(nameof(UserSessionLicense.LicenseID), licenses.Select(l => l.ID)));
-            List<User> activeUsers = authTables.Users.GetStructs(userSessionLicenses.Select(usl => usl.UserID).Distinct());
+            var phoneNumbers = authTables.PhoneNumbers.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            var emailAddresses = authTables.EmailAddresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            var addresses = authTables.Addresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            var userSessionLicenses = authTables.UserSessionLicenses.GetStructs(Search.FieldIn(nameof(UserSessionLicense.LicenseID), licenses.Select(l => l.ID)));
+            var activeUsers = authTables.Users.GetStructs(userSessionLicenses.Select(usl => usl.UserID).Distinct());
 
             user.ClearPrivateFields();
             data.Result.AddMessage(data.Method, "User details retrieved");
@@ -410,7 +410,7 @@ namespace Cave.Web.Auth
         public void VerifyAccount(WebData data, string email, string code)
         {
             AuthTables authTables = data.Server.AuthTables;
-            List<EmailAddress> addresses = authTables.EmailAddresses.GetStructs(nameof(EmailAddress.Address), email);
+            var addresses = authTables.EmailAddresses.GetStructs(nameof(EmailAddress.Address), email);
             if (addresses.Count > 1)
             {
                 throw new WebServerException(WebError.InvalidParameters, 0, string.Format("Email address {0} not unique, please contact support!", email));
@@ -656,7 +656,7 @@ namespace Cave.Web.Auth
             {
                 throw new WebServerException(WebError.InvalidParameters, 0, "ConfigurationSet requires a post request!");
             }
-            List<long> existing = authTables.UserConfigurations.FindRows(
+            var existing = authTables.UserConfigurations.FindRows(
                 Search.FieldEquals(nameof(UserConfiguration.UserID), user.ID) &
                 Search.FieldEquals(nameof(UserConfiguration.ProgramID), programID));
 
@@ -733,11 +733,11 @@ namespace Cave.Web.Auth
             AuthTables authTables = data.Server.AuthTables;
             User user = data.Session.GetUser();
             authTables.UserDetails.TryGetStruct(user.ID, out UserDetail userDetail); userDetail.UserID = user.ID;
-            List<GroupMember> groupMember = authTables.GroupMembers.GetStructs(nameof(GroupMember.UserID), user.ID);
-            List<Group> groups = authTables.Groups.GetStructs(groupMember.Select(m => m.GroupID).ToArray());
+            var groupMember = authTables.GroupMembers.GetStructs(nameof(GroupMember.UserID), user.ID);
+            var groups = authTables.Groups.GetStructs(groupMember.Select(m => m.GroupID).ToArray());
 
             //get licenses and transfer without certificate data
-            List<License> licenses = new List<License>();
+            var licenses = new List<License>();
             licenses.AddRange(authTables.GetGroupLicenses(groups.Select(g => g.ID)));
             licenses.AddRange(authTables.GetUserLicenses(user.ID));
             for (int i = 0; i < licenses.Count; i++)
@@ -747,11 +747,11 @@ namespace Cave.Web.Auth
                 licenses[i] = l;
             }
 
-            List<PhoneNumber> phoneNumbers = authTables.PhoneNumbers.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            List<EmailAddress> emailAddresses = authTables.EmailAddresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            List<Address> addresses = authTables.Addresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            List<UserSessionLicense> userSessionLicenses = authTables.UserSessionLicenses.GetStructs(Search.FieldIn(nameof(UserSessionLicense.LicenseID), licenses.Select(l => l.ID)));
-            List<User> activeUsers = authTables.Users.GetStructs(userSessionLicenses.Select(usl => usl.UserID).Distinct());
+            var phoneNumbers = authTables.PhoneNumbers.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            var emailAddresses = authTables.EmailAddresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            var addresses = authTables.Addresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            var userSessionLicenses = authTables.UserSessionLicenses.GetStructs(Search.FieldIn(nameof(UserSessionLicense.LicenseID), licenses.Select(l => l.ID)));
+            var activeUsers = authTables.Users.GetStructs(userSessionLicenses.Select(usl => usl.UserID).Distinct());
 
             data.Result.AddMessage(data.Method, "User details retrieved");
             data.Result.AddStruct(user.ClearPrivateFields());
@@ -1099,7 +1099,7 @@ namespace Cave.Web.Auth
         {
             AuthTables authTables = data.Server.AuthTables;
             User user = data.Session.GetUser();
-            List<GroupMember> members = authTables.GroupMembers.GetStructs(
+            var members = authTables.GroupMembers.GetStructs(
                 Search.FieldEquals(nameof(GroupMember.UserID), user.ID) &
                 Search.FieldEquals(nameof(GroupMember.GroupID), groupID));
             if (members.Count != 1)

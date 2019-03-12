@@ -548,12 +548,12 @@ namespace Cave.Web
         /// <remarks>Without session source checks the session may roam. This may increase the risk of hostile session takeover.</remarks>
         public bool RequireSessionSourceCheck { get; set; }
 
-#endregion
+        #endregion
 
         /// <summary>Initializes a new instance of the <see cref="WebServer"/> class.</summary>
         public WebServer() { }
 
-#region public functions
+        #region public functions
         /// <summary>Finds the method for the specified url.</summary>
         /// <param name="url">The URL.</param>
         /// <returns>Returns a method instance or null.</returns>
@@ -832,9 +832,9 @@ namespace Cave.Web
             answer.Headers["Cache-Control"] = $"public, max-age={seconds}";
             answer.Headers["Expires"] = (DateTime.UtcNow + cacheTime).ToString("R");
         }
-#endregion
+        #endregion
 
-#region events
+        #region events
 
         /// <summary>Occurs after the session is loaded when the session check for authentication is performed.</summary>
         /// <remarks>Use this event to check for a valid user account and load the user dataset.</remarks>
@@ -879,6 +879,6 @@ namespace Cave.Web
             }
         }
 
-#endregion
+        #endregion
     }
 }

@@ -129,13 +129,17 @@
       <Project>{6fb8ab43-1cfa-4fef-a884-57123f6818b4}</Project>
       <Name>Cave.WebServer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Test\Test.csproj">
+      <Project>{a13b71da-2ae2-4b87-963a-3c5e417b4f67}</Project>
+      <Name>Test</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Cave.AssemblyVersionInfo">
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Cave.Auth">
-      <Version>1.0.1</Version>
+      <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="Cave.Collections">
       <Version>1.0.2</Version>
@@ -147,10 +151,10 @@
       <Version>1.0.1</Version>
     </PackageReference>
     <PackageReference Include="Cave.Data">
-      <Version>1.0.5</Version>
+      <Version>1.0.6</Version>
     </PackageReference>
     <PackageReference Include="Cave.Extensions">
-      <Version>1.0.6</Version>
+      <Version>1.0.7</Version>
     </PackageReference>
     <PackageReference Include="Cave.FileSystem">
       <Version>1.1.1</Version>

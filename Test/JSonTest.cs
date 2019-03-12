@@ -8,7 +8,8 @@ using NUnit.Framework.Constraints;
 
 namespace Test
 {
-    class JSONTest
+    [TestFixture]
+    public class JsonTest
     {
         JsonReader GetReader(string data)
         {

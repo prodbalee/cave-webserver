@@ -96,7 +96,7 @@ namespace Cave.Web
 
                 //load old session
                 userSession.ID = 0;
-                List<UserSession> sessions = request.Server.AuthTables.UserSessions.GetStructs(sessionSearch);
+                var sessions = request.Server.AuthTables.UserSessions.GetStructs(sessionSearch);
                 foreach (UserSession session in sessions)
                 {
                     //session expired or session already loaded ? (duplicate)
@@ -255,7 +255,7 @@ namespace Cave.Web
 
         /// <summary>Gets the email dataset.</summary>
         /// <value>The email dataset.</value>
-        public List<EmailAddress> GetEmailAddresses()
+        public IList<EmailAddress> GetEmailAddresses()
         {
             if (UserSession.IsAuthenticated())
             {

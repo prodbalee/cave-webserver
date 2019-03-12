@@ -10,6 +10,7 @@ using NUnit.Framework;
 
 namespace Test
 {
+    [TestFixture]
     public class WebServerTest
     {
         [Table]
@@ -141,7 +142,6 @@ namespace Test
             {
                 webData.Result.AddMessage(webData.Method, "Basic Auth success: ");
             }
-
         }
 
         public WebServer Server { get; private set; }
