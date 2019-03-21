@@ -84,9 +84,4 @@
     <PackageReference Include="Cave.Data" Version="1.0.6" />
     <PackageReference Include="Cave.Auth" Version="1.0.2" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Update="C:\Users\andreas.CAVE\.nuget\packages\cave.media\1.0.0\contentFiles\any\net45\Cave.Media.dll.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
 </Project>
