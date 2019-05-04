@@ -6,7 +6,7 @@ using System.Text;
 namespace Cave.IO
 {
     /// <summary>
-    /// Privides a simple json writer
+    /// Privides a simple json writer.
     /// </summary>
     public class JsonWriter
     {
@@ -24,6 +24,7 @@ namespace Cave.IO
         }
 
         /// <summary>Begins an object.</summary>
+        /// <param name="name">Name of the object.</param>
         public void BeginObject(string name = null)
         {
             if (sb.Length == 0)
@@ -55,6 +56,7 @@ namespace Cave.IO
         }
 
         /// <summary>Begins an array.</summary>
+        /// <param name="name">Name of the array.</param>
         public void BeginArray(string name = null)
         {
             if (!string.IsNullOrEmpty(name))
@@ -75,17 +77,18 @@ namespace Cave.IO
         }
 
         /// <summary>Ends an array.</summary>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="InvalidOperationException">Unexpected EndArray().</exception>
+        /// <exception cref="InvalidOperationException">EndObject() expected!.</exception>
         public void EndArray()
         {
-            if (subIsArray.Count == 0) { throw new InvalidOperationException("Unexpected EndObject()."); }
+            if (subIsArray.Count == 0) { throw new InvalidOperationException("Unexpected EndArray()."); }
             if (!subIsArray.Peek()) { throw new InvalidOperationException("EndObject() expected!"); }
             subIsArray.Pop();
             firstItem = isFirstItem.Pop();
             sb.Append("]");
         }
 
-        /// <summary>Writes an object</summary>
+        /// <summary>Writes an object.</summary>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         /// <param name="box">if set to <c>true</c> [box].</param>
@@ -98,13 +101,14 @@ namespace Cave.IO
                 sb.Append("{");
             }
             if (firstItem) { firstItem = false; } else { sb.Append(","); }
-            //escape value
+
+            // escape value
             if (escape) { value = value.Escape(); }
             if (box) { value = value.Box('"'); }
             sb.Append($"\"{name}\":{value}");
         }
 
-        /// <summary>Writes an object</summary>
+        /// <summary>Writes an object.</summary>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         public void Object(string name, bool value)
@@ -112,7 +116,7 @@ namespace Cave.IO
             String(name, value.ToString().ToLower());
         }
 
-        /// <summary>Writes an object</summary>
+        /// <summary>Writes an object.</summary>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         public void Object(string name, int value)
@@ -120,7 +124,7 @@ namespace Cave.IO
             Object(name, value.ToString(), false, false);
         }
 
-        /// <summary>Writes an object</summary>
+        /// <summary>Writes an object.</summary>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         public void Object(string name, long value)
@@ -128,7 +132,7 @@ namespace Cave.IO
             Object(name, value.ToString(), false, false);
         }
 
-        /// <summary>Writes an object</summary>
+        /// <summary>Writes an object.</summary>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         public void Object(string name, double value)
@@ -136,7 +140,7 @@ namespace Cave.IO
             Object(name, value.ToString("R", CultureInfo.InvariantCulture), false, false);
         }
 
-        /// <summary>Writes an object</summary>
+        /// <summary>Writes an object.</summary>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         public void Object(string name, float value)
@@ -144,7 +148,7 @@ namespace Cave.IO
             Object(name, value.ToString("R", CultureInfo.InvariantCulture), false, false);
         }
 
-        /// <summary>Writes an object</summary>
+        /// <summary>Writes an object.</summary>
         /// <param name="name">The name.</param>
         /// <param name="value">The value.</param>
         public void String(string name, string value)
@@ -168,9 +172,9 @@ namespace Cave.IO
             EndArray();
         }
 
-        /// <summary>Writes a value</summary>
+        /// <summary>Writes a value.</summary>
         /// <param name="value">The value.</param>
-        /// <param name="box">box the string</param>
+        /// <param name="box">box the string.</param>
         /// <param name="escape">if set to <c>true</c> [escape].</param>
         public void ArrayValue(string value, bool box, bool escape)
         {
@@ -180,43 +184,43 @@ namespace Cave.IO
             sb.Append(value);
         }
 
-        /// <summary>Writes a value</summary>
+        /// <summary>Writes a value.</summary>
         /// <param name="value">The value.</param>
         public void ArrayValue(bool value)
         {
             ArrayValue(value.ToString().ToLower(), true, false);
         }
 
-        /// <summary>Writes a value</summary>
+        /// <summary>Writes a value.</summary>
         /// <param name="value">The value.</param>
         public void ArrayValue(int value)
         {
             ArrayValue(value.ToString(), false, false);
         }
 
-        /// <summary>Writes a value</summary>
+        /// <summary>Writes a value.</summary>
         /// <param name="value">The value.</param>
         public void ArrayValue(long value)
         {
             ArrayValue(value.ToString(), false, false);
         }
 
-        /// <summary>Writes a value</summary>
+        /// <summary>Writes a value.</summary>
         /// <param name="value">The value.</param>
         public void ArrayValue(float value)
         {
             ArrayValue(value.ToString("R", CultureInfo.InvariantCulture), false, false);
         }
 
-        /// <summary>Writes a value</summary>
+        /// <summary>Writes a value.</summary>
         /// <param name="value">The value.</param>
         public void ArrayValue(double value)
         {
             ArrayValue(value.ToString("R", CultureInfo.InvariantCulture), false, false);
         }
 
-        /// <summary>Returns a <see cref="System.String" /> that represents this instance.</summary>
-        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
+        /// <summary>Returns a <see cref="string" /> that represents this instance.</summary>
+        /// <returns>A <see cref="string" /> that represents this instance.</returns>
         public override string ToString()
         {
             if (subIsArray.Count != 0) { throw new Exception("Not completed!"); }

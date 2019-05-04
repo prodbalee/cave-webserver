@@ -6,12 +6,12 @@ using Cave.Collections.Generic;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a firewall entry
+    /// Provides a firewall entry.
     /// </summary>
-    /// <seealso cref="Cave.Collections.Generic.IExpiring" />
+    /// <seealso cref="IExpiring" />
     class WebFirewallEntry : IExpiring
     {
-        /// <summary>The source address</summary>
+        /// <summary>The source address.</summary>
         public readonly string Address;
 
         /// <summary>Gets the error counter.</summary>
@@ -62,25 +62,26 @@ namespace Cave.Web
                 return TimeSpan.Zero;
             }
 
-            //calculate earliest start ticks
+            // calculate earliest start ticks
             long pow = errorCount * errorCount;
-            long ticks = Interlocked.Read(ref lastAccessTicks) + 100 * pow * TimeSpan.TicksPerMillisecond;
-            //at least one second
+            long ticks = Interlocked.Read(ref lastAccessTicks) + (100 * pow * TimeSpan.TicksPerMillisecond);
+
+            // at least one second
             ticks += TimeSpan.TicksPerSecond;
             ticks -= DateTime.UtcNow.Ticks;
             return new TimeSpan(ticks);
         }
 
-        int m_WaitingCount;
+        int waitingCount;
 
         public int Enter()
         {
-            return Interlocked.Increment(ref m_WaitingCount);
+            return Interlocked.Increment(ref waitingCount);
         }
 
         internal int Exit()
         {
-            return Interlocked.Decrement(ref m_WaitingCount);
+            return Interlocked.Decrement(ref waitingCount);
         }
     }
 }

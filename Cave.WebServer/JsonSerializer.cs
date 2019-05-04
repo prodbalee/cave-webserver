@@ -9,12 +9,12 @@ using Cave.IO;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides Row based serialization
+    /// Provides Row based serialization.
     /// </summary>
     public class JsonSerializer
     {
         /// <summary>
-        /// Settings used during de/serialization
+        /// Settings used during de/serialization.
         /// </summary>
         [Flags]
         public enum Flags
@@ -29,8 +29,7 @@ namespace Cave.Web
             SkipMainObject = 2,
         }
 
-        StringBuilder result = new StringBuilder();
-        int Version;
+        readonly StringBuilder result = new StringBuilder();
         bool firstitem;
 
         #region private Data Serializer
@@ -60,7 +59,6 @@ namespace Cave.Web
                     }
 
                     result.Append(value);
-
                 }
                 catch (Exception ex)
                 {
@@ -89,7 +87,7 @@ namespace Cave.Web
             result.Append(name);
             result.Append("\":{\"Type\":\"Table\",\"RowCount\":");
             result.Append(rowCount);
-            if (0 != (Mode & Flags.WithLayout) || Version < 2)
+            if ((Mode & Flags.WithLayout) != 0 || Version < 2)
             {
                 if (layout.IsTyped)
                 {
@@ -107,17 +105,42 @@ namespace Cave.Web
                         result.Append(',');
                     }
 
-                    result.Append("{\"Name\":\""); result.Append(field.Name);
-                    result.Append("\",\"DataType\":\""); result.Append(field.DataType); result.Append("\"");
+                    result.Append("{\"Name\":\"");
+                    result.Append(field.Name);
+                    result.Append("\",\"DataType\":\"");
+                    result.Append(field.DataType);
+                    result.Append("\"");
 
-                    if (field.Flags != 0) { result.Append(",\"Flags\":\""); result.Append(field.Flags); result.Append("\""); }
-                    if (field.MaximumLength > 0) { result.Append(",\"MaximumLength\":"); result.Append(field.MaximumLength); }
-                    if (field.ValueType != null) { result.Append(",\"ValueType\":\""); result.Append(field.ValueType.Name); result.Append("\""); }
-                    if (field.StringEncoding != 0) { result.Append(",\"StringEncoding\":\""); result.Append(field.ValueType.Name); result.Append("\""); }
+                    if (field.Flags != 0)
+                    {
+                        result.Append(",\"Flags\":\"");
+                        result.Append(field.Flags);
+                        result.Append("\"");
+                    }
+                    if (field.MaximumLength > 0)
+                    {
+                        result.Append(",\"MaximumLength\":");
+                        result.Append(field.MaximumLength);
+                    }
+                    if (field.ValueType != null)
+                    {
+                        result.Append(",\"ValueType\":\"");
+                        result.Append(field.ValueType.Name);
+                        result.Append("\"");
+                    }
+                    if (field.StringEncoding != 0)
+                    {
+                        result.Append(",\"StringEncoding\":\"");
+                        result.Append(field.ValueType.Name);
+                        result.Append("\"");
+                    }
                     if (field.DataType == DataType.DateTime)
                     {
-                        result.Append(",\"DateTimeKind\":\""); result.Append(field.DateTimeKind);
-                        result.Append("\",\"DateTimeType\":\""); result.Append(field.DateTimeType); result.Append("\"");
+                        result.Append(",\"DateTimeKind\":\"");
+                        result.Append(field.DateTimeKind);
+                        result.Append("\",\"DateTimeType\":\"");
+                        result.Append(field.DateTimeType);
+                        result.Append("\"");
                     }
                     result.Append('}');
                 }
@@ -149,7 +172,8 @@ namespace Cave.Web
                     {
                         goto case 1;
                     }
-                    //create lookup table
+
+                    // create lookup table
                     result.Append("],\"Lookup\":{");
                     int i = 0;
                     foreach (Row row in rows)
@@ -169,7 +193,7 @@ namespace Cave.Web
         }
         #endregion
 
-        /// <summary>Initializes a new instance of the <see cref="XmlSerializer"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="JsonSerializer"/> class.</summary>
         public JsonSerializer(int version, Flags mode)
         {
             Mode = mode;
@@ -198,9 +222,14 @@ namespace Cave.Web
             }
         }
 
-        /// <summary>Gets or sets the mode.</summary>
+        /// <summary>Gets the mode.</summary>
         /// <value>The mode.</value>
         public Flags Mode { get; }
+
+        /// <summary>
+        /// Gets the serializer Version.
+        /// </summary>
+        public int Version { get; }
 
         #region Serializer
 
@@ -229,9 +258,10 @@ namespace Cave.Web
         /// <typeparam name="T"></typeparam>
         /// <param name="name">The name.</param>
         /// <param name="item">The item.</param>
-        public void Serialize<T>(string name, T item) where T : struct
+        public void Serialize<T>(string name, T item)
+            where T : struct
         {
-            RowLayout layout = RowLayout.CreateTyped(typeof(T));
+            var layout = RowLayout.CreateTyped(typeof(T));
             SerializeTable(name, layout, 1, new Row[] { Row.Create(layout, item) });
         }
 
@@ -239,10 +269,11 @@ namespace Cave.Web
         /// <typeparam name="T"></typeparam>
         /// <param name="name">The name.</param>
         /// <param name="items">The items.</param>
-        /// <exception cref="System.ArgumentNullException">Items</exception>
-        public void Serialize<T>(string name, T[] items) where T : struct
+        /// <exception cref="ArgumentNullException">Items.</exception>
+        public void Serialize<T>(string name, T[] items)
+            where T : struct
         {
-            RowLayout layout = RowLayout.CreateTyped(typeof(T));
+            var layout = RowLayout.CreateTyped(typeof(T));
             SerializeTable(name, layout, items.Length, items.Select(i => Row.Create(layout, i)));
         }
 
@@ -250,20 +281,21 @@ namespace Cave.Web
         /// <typeparam name="T"></typeparam>
         /// <param name="name">The name.</param>
         /// <param name="items">The items.</param>
-        /// <exception cref="System.ArgumentNullException">Items</exception>
-        public void Serialize<T>(string name, IList<T> items) where T : struct
+        /// <exception cref="ArgumentNullException">Items.</exception>
+        public void Serialize<T>(string name, IList<T> items)
+            where T : struct
         {
-            RowLayout layout = RowLayout.CreateTyped(typeof(T));
+            var layout = RowLayout.CreateTyped(typeof(T));
             SerializeTable(name, layout, items.Count, items.Select(i => Row.Create(layout, i)));
         }
 
         /// <summary>Serializes the specified table.</summary>
         /// <param name="name">The name.</param>
         /// <param name="table">The table.</param>
-        /// <exception cref="System.ArgumentNullException">Items</exception>
+        /// <exception cref="ArgumentNullException">Items.</exception>
         /// <exception cref="ArgumentNullException">Table
         /// or
-        /// Writer</exception>
+        /// Writer.</exception>
         public void Serialize(string name, ITable table)
         {
             SerializeTable(name, table.Layout, table.RowCount, table.GetRows());
@@ -273,16 +305,16 @@ namespace Cave.Web
         /// <param name="name">The name.</param>
         /// <param name="layout">The layout.</param>
         /// <param name="rows">The rows.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// Rows
         /// or
-        /// Layout
+        /// Layout.
         /// </exception>
         /// <exception cref="ArgumentNullException">Rows
         /// or
         /// Layout
         /// or
-        /// Writer</exception>
+        /// Writer.</exception>
         public void Serialize(string name, RowLayout layout, IList<Row> rows)
         {
             SerializeTable(name, layout, rows.Count, rows);
@@ -293,7 +325,7 @@ namespace Cave.Web
         /// <param name="s">The stream to write to.</param>
         public void WriteTo(Stream s)
         {
-            DataWriter writer = new DataWriter(s);
+            var writer = new DataWriter(s);
             writer.Write(ToString());
         }
 

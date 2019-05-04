@@ -4,16 +4,16 @@ using Cave.Auth;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides embedded web server authentication event arguments
+    /// Provides embedded web server authentication event arguments.
     /// </summary>
-    /// <seealso cref="System.EventArgs" />
+    /// <seealso cref="EventArgs" />
     public class WebServerAuthEventArgs : EventArgs
     {
         /// <summary>Gets the web data.</summary>
         /// <value>The web data.</value>
         public WebData Data { get; }
 
-        /// <summary>The authentication type sent by the client</summary>
+        /// <summary>Gets the authentication type sent by the client.</summary>
         public WebServerAuthType AuthType { get; }
 
         /// <summary>Gets the page settings.</summary>
@@ -30,8 +30,8 @@ namespace Cave.Web
 
         /// <summary>Sets the authenticated flag to the request and the session.</summary>
         /// <param name="user">The user.</param>
-        /// <param name="flags">Used internally to define local host usage</param>
-        /// <exception cref="InvalidOperationException">IsAuthenticated cannot be set twice!</exception>
+        /// <param name="flags">Used internally to define local host usage.</param>
+        /// <exception cref="InvalidOperationException">IsAuthenticated cannot be set twice!.</exception>
         /// <remarks>This can only be used once per request. Once set this will throw an Exception on any further calls.</remarks>
         public void SetAuthentication(User user, UserSessionFlags flags = 0)
         {
@@ -39,11 +39,11 @@ namespace Cave.Web
         }
 
         /// <summary>Initializes a new instance of the <see cref="WebServerAuthEventArgs" /> class.</summary>
-        /// <exception cref="NotImplementedException"></exception>
         public WebServerAuthEventArgs(WebData data)
         {
             Data = data;
-            //basic auth ?
+
+            // basic auth ?
             data.Request.Headers.TryGetValue("authorization", out string value);
             if (value != null)
             {

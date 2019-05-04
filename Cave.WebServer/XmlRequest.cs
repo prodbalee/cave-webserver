@@ -11,7 +11,7 @@ using System.Text;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a CaveXML rpc call
+    /// Provides a CaveXML rpc call.
     /// </summary>
     public class XmlRequest
     {
@@ -20,7 +20,7 @@ namespace Cave.Web
         public static string CreateHash(string text, string password)
         {
             byte[] data;
-            using (HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(password)))
+            using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(password)))
             {
                 data = hmac.ComputeHash(Encoding.UTF8.GetBytes(text));
             }
@@ -34,7 +34,7 @@ namespace Cave.Web
         /// <returns></returns>
         public static XmlRequest Prepare(string server, string function, params string[] parameters)
         {
-            Uri uri = new Uri(server + "/" + function + ".xml?" + string.Join("&", parameters));
+            var uri = new Uri(server + "/" + function + ".xml?" + string.Join("&", parameters));
             return new XmlRequest(uri);
         }
 
@@ -60,9 +60,9 @@ namespace Cave.Web
             return new XmlRequest(uri);
         }
 
-        HttpWebRequest request;
+        readonly HttpWebRequest request;
 
-        /// <summary>The header variables</summary>
+        /// <summary>Gets the header variables.</summary>
         public WebHeaderCollection Headers { get; }
 
         /// <summary>Gets the response headers.</summary>
@@ -116,7 +116,7 @@ namespace Cave.Web
 
         /// <summary>Executes a get request.</summary>
         /// <returns></returns>
-        /// <exception cref="System.Exception">Already executed!</exception>
+        /// <exception cref="Exception">Already executed!.</exception>
         public WebMessage Get()
         {
             if (Result != null)
@@ -130,13 +130,13 @@ namespace Cave.Web
             {
                 try
                 {
-                    return this.DecodeResponse(request.GetResponse());
+                    return DecodeResponse(request.GetResponse());
                 }
-                catch (System.Net.WebException ex)
+                catch (WebException ex)
                 {
                     if (ex.Response != null)
                     {
-                        return this.DecodeResponse(ex.Response);
+                        return DecodeResponse(ex.Response);
                     }
 
                     return WebMessage.Create(ex.Source, ex.Message, error: WebError.ClientError);
@@ -186,13 +186,13 @@ namespace Cave.Web
                             }
                         }
                     }
-                    return this.DecodeResponse(request.GetResponse());
+                    return DecodeResponse(request.GetResponse());
                 }
-                catch (System.Net.WebException ex)
+                catch (WebException ex)
                 {
                     if (ex.Response != null)
                     {
-                        return this.DecodeResponse(ex.Response);
+                        return DecodeResponse(ex.Response);
                     }
 
                     return WebMessage.Create(ex.Source, ex.Message, error: WebError.ClientError);
@@ -210,7 +210,7 @@ namespace Cave.Web
             if (response.SupportsHeaders)
 #endif
             {
-                Dictionary<string, string> headers = new Dictionary<string, string>();
+                var headers = new Dictionary<string, string>();
                 foreach (string key in response.Headers.Keys)
                 {
                     headers[key] = response.Headers[key];
@@ -221,8 +221,8 @@ namespace Cave.Web
             {
                 if (Debugger.IsAttached)
                 {
-                    //allow to view in debugger
-                    using (MemoryStream ms = new MemoryStream(s.ReadAllBytes()))
+                    // allow to view in debugger
+                    using (var ms = new MemoryStream(s.ReadAllBytes()))
                     {
                         Result.Parse(ms);
                     }
@@ -240,9 +240,9 @@ namespace Cave.Web
             return Result.GetRow<WebMessage>();
         }
 
-        /// <summary>Deserializes this instance.</summary>
+        /// <summary>Gets the deserialization result.</summary>
         /// <returns></returns>
-        /// <exception cref="System.Exception">Use Execute() first!</exception>
+        /// <exception cref="Exception">Use Execute() first!.</exception>
         public XmlDeserializer Result { get; private set; }
 
         /// <summary>Returns a <see cref="string" /> that represents this instance.</summary>

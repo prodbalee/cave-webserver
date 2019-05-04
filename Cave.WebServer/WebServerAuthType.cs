@@ -1,7 +1,7 @@
 ﻿namespace Cave.Web
 {
     /// <summary>
-    /// Provides the server authentication type
+    /// Provides the server authentication type.
     /// </summary>
     public enum WebServerAuthType
     {

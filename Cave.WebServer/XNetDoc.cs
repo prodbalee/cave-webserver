@@ -8,15 +8,15 @@ using System.Xml.Linq;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a .net documentation
+    /// Provides a .net documentation.
     /// </summary>
     public class XNetDoc
     {
-        /// <summary>Loads all documentation xml files from the program path</summary>
+        /// <summary>Loads all documentation xml files from the program path.</summary>
         /// <returns></returns>
         public static XNetDoc FromProgramPath()
         {
-            XNetDoc result = new XNetDoc();
+            var result = new XNetDoc();
             foreach (string file in Directory.GetFiles(FileSystem.ProgramDirectory, "*.*"))
             {
                 if (Path.GetExtension(file).ToLower() == ".xml")
@@ -28,19 +28,19 @@ namespace Cave.Web
             return result;
         }
 
-        /// <summary>The methods</summary>
+        /// <summary>The methods.</summary>
         public readonly Dictionary<string, XNetDocItem> Methods = new Dictionary<string, XNetDocItem>();
 
-        /// <summary>The fields</summary>
+        /// <summary>The fields.</summary>
         public readonly Dictionary<string, XNetDocItem> Fields = new Dictionary<string, XNetDocItem>();
 
-        /// <summary>The types</summary>
+        /// <summary>The types.</summary>
         public readonly Dictionary<string, XNetDocItem> Types = new Dictionary<string, XNetDocItem>();
 
-        /// <summary>The properties</summary>
+        /// <summary>The properties.</summary>
         public readonly Dictionary<string, XNetDocItem> Properties = new Dictionary<string, XNetDocItem>();
 
-        /// <summary>The enums</summary>
+        /// <summary>The enums.</summary>
         public readonly Dictionary<string, XNetDocItem> Enums = new Dictionary<string, XNetDocItem>();
 
         /// <summary>Initializes a new instance of the <see cref="XNetDoc"/> class.</summary>
@@ -50,7 +50,7 @@ namespace Cave.Web
         /// <param name="filename">The filename.</param>
         public void Load(string filename)
         {
-            XDocument xDoc = XDocument.Load(filename);
+            var xDoc = XDocument.Load(filename);
             IEnumerable<XElement> xMembers = xDoc.Root.Elements("members").Elements("member");
 
             foreach (XElement xMember in xMembers)
@@ -103,7 +103,7 @@ namespace Cave.Web
         /// <returns></returns>
         public XNetDocItem GetMethod(MethodInfo method)
         {
-            //string fullname = string.Format("{0}.{1}({2})", method.ReflectedType.FullName, method.Name, string.Join(",", method.GetParameters().Select(o => o.ParameterType.ToString()).ToArray()));
+            // string fullname = string.Format("{0}.{1}({2})", method.ReflectedType.FullName, method.Name, string.Join(",", method.GetParameters().Select(o => o.ParameterType.ToString()).ToArray()));
             string fullname = string.Format("{0}.{1}", method.ReflectedType.FullName.BeforeFirst('['), method.Name);
             Methods.TryGetValue(fullname, out XNetDocItem item);
             return item;

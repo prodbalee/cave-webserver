@@ -8,13 +8,12 @@ using Cave.Auth;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides authentication and software functions on auth.cave.cloud
+    /// Provides authentication and software functions on auth.cave.cloud.
     /// </summary>
     public class XAuthSoftware
     {
-        System.Threading.Timer m_Timer;
-        string m_Password;
-        Exception m_Exception;
+        Timer timer;
+        string password;
 
         WebMessage LoadSessionResult(XmlRequest request)
         {
@@ -34,9 +33,9 @@ namespace Cave.Web
         {
             try
             {
-                XmlRequest request = XmlRequest.Prepare(Server, "SoftwareCheckSession");
+                var request = XmlRequest.Prepare(Server, "SoftwareCheckSession");
                 request.Headers["Session"] = Session.SessionID.ToString();
-                request.Credentials = new NetworkCredential(AssemblyVersionInfo.Program.Product + "/" + AssemblyVersionInfo.Program.AssemblyVersion + "/" + AppDom.ProgramID, m_Password);
+                request.Credentials = new NetworkCredential(AssemblyVersionInfo.Program.Product + "/" + AssemblyVersionInfo.Program.AssemblyVersion + "/" + AppDom.ProgramID, password);
                 WebMessage message = request.Post();
                 if (message.Error != WebError.None)
                 {
@@ -48,7 +47,7 @@ namespace Cave.Web
             }
             catch (WebServerException ex)
             {
-                m_Exception = ex;
+                Exception = ex;
                 switch (ex.Error)
                 {
                     case WebError.AuthenticationRequired:
@@ -67,7 +66,7 @@ namespace Cave.Web
             }
             catch (Exception ex)
             {
-                m_Exception = ex;
+                Exception = ex;
                 Trace.TraceError("CheckSession error!");
                 if (true.Equals(state))
                 {
@@ -78,8 +77,8 @@ namespace Cave.Web
             {
                 if (Session.IsExpired)
                 {
-                    m_Timer?.Dispose();
-                    m_Timer = null;
+                    timer?.Dispose();
+                    timer = null;
                     OnSessionUpdated(new EventArgs());
                 }
             }
@@ -91,7 +90,7 @@ namespace Cave.Web
         {
             if (SessionUpdated != null)
             {
-                Task.Factory.StartNew(delegate
+                Task.Factory.StartNew(() =>
                 {
                     SessionUpdated?.Invoke(null, e);
                 });
@@ -99,33 +98,32 @@ namespace Cave.Web
         }
 
         /*
-		CaveXmlDeserializer CheckSession(string name, Version version, long programID, string password)
-		{
-			CaveXmlRequest request = CaveXmlRequest.Prepare(Server, "SoftwareCheckSession");
-			request.Headers["Session"] = Session.ID.ToString();
-			request.Credentials = new NetworkCredential(name + "/" + version + "/" + programID, password);
-			CaveWebMessage message = request.Get();
-			if (message.Error != CaveWebError.None) throw new XAuthException(message, request);
-			return request.Result;
-		}
-		*/
+        CaveXmlDeserializer CheckSession(string name, Version version, long programID, string password)
+        {
+            CaveXmlRequest request = CaveXmlRequest.Prepare(Server, "SoftwareCheckSession");
+            request.Headers["Session"] = Session.ID.ToString();
+            request.Credentials = new NetworkCredential(name + "/" + version + "/" + programID, password);
+            CaveWebMessage message = request.Get();
+            if (message.Error != CaveWebError.None) throw new XAuthException(message, request);
+            return request.Result;
+        }
+        */
 
         /// <summary>Creates a new session.</summary>
-        /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
+        /// <param name="password">Password to use.</param>
         public void CreateSession(string password)
         {
             lock (this)
             {
-                m_Timer?.Dispose();
-                m_Timer = null;
-                m_Password = password;
+                timer?.Dispose();
+                timer = null;
+                this.password = password;
 
                 CheckSession(true);
 
                 if (Session.SessionID > 0)
                 {
-                    m_Timer = new Timer(CheckSession, null, 1000 * 10, 1000 * 10);
+                    timer = new Timer(CheckSession, null, 1000 * 10, 1000 * 10);
                 }
             }
         }
@@ -150,9 +148,15 @@ namespace Cave.Web
         /// <summary>Gets the name of the log source.</summary>
         /// <value>The name of the log source.</value>
         public string LogSourceName => "XAuth";
+
+        /// <summary>
+        /// Gets the exception encoutered during authentication. This is null if the session is valid.
+        /// </summary>
+        public Exception Exception { get; private set; }
+
         #endregion
 
-        /// <summary>Verifies a transaction</summary>
+        /// <summary>Verifies a transaction.</summary>
         /// <param name="userSessionID">The user session identifier.</param>
         /// <param name="url">The URL.</param>
         /// <param name="transactionKey">The transaction key.</param>
@@ -181,7 +185,7 @@ namespace Cave.Web
 
             string urlHash = Base64.UrlChars.Encode(Hash.FromString(Hash.Type.SHA256, url));
             Trace.TraceInformation("Session <white>{0}<default> TransactionKey <yellow>{1}<default> URL <cyan>{2}<default> UrlHash <cyan>{3}", Base64.UrlChars.Encode(userSessionID), transactionKey, url, urlHash);
-            XmlRequest request = XmlRequest.Prepare(Server, "VerifyTransaction", $"userSessionID={userSessionID}", $"urlHash={urlHash}", $"transactionKey={transactionKey}");
+            var request = XmlRequest.Prepare(Server, "VerifyTransaction", $"userSessionID={userSessionID}", $"urlHash={urlHash}", $"transactionKey={transactionKey}");
             request.Headers["Session"] = Session.SessionID.ToString();
             WebMessage message = request.Post();
             Trace.TraceInformation(message.ToString());

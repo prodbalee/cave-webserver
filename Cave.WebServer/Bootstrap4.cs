@@ -6,14 +6,13 @@ using System.Text;
 namespace Cave.Web
 {
     /// <summary>
-    /// Bootstrap 4 content builder
+    /// Bootstrap 4 content builder.
     /// </summary>
     public class Bootstrap4
     {
-
         /// <summary>Small and adaptive tag for adding context to just about any content.</summary>
         /// <param name="text">The text.</param>
-        /// <param name="subclasses">The subclasses. (badge-[color], badge-pill)</param>
+        /// <param name="subclasses">The subclasses. (badge-[color], badge-pill).</param>
         /// <returns></returns>
         public static string GetBadge(string text, string subclasses = null)
         {
@@ -23,20 +22,13 @@ namespace Cave.Web
         /// <summary>Gets a link.</summary>
         /// <param name="text">The text.</param>
         /// <param name="link">The link.</param>
-        /// <param name="subclasses">The subclasses. (button)</param>
+        /// <param name="subclasses">The subclasses. (button).</param>
         /// <returns></returns>
         public static string GetLink(string text, string link = null, string subclasses = null)
         {
             if (link == null)
             {
-                if (text.StartsWith("/"))
-                {
-                    link = text;
-                }
-                else
-                {
-                    link = "/" + text;
-                }
+                link = text.StartsWith("/") ? text : "/" + text;
             }
             if (subclasses == null)
             {
@@ -47,17 +39,33 @@ namespace Cave.Web
         }
 
         /// <summary>
-        /// item types for divs / sections / ident
+        /// item types for divs / sections / ident.
         /// </summary>
         public enum Item
         {
-#pragma warning disable 1591 //will not be documented
-            card, card_header, card_block, list_group, list_group_item, container, container_fluid, row, col, table, table_row, d_flex, p, float_left, float_right, btn_group, btn
-#pragma warning restore 1591
+#pragma warning disable 1591, SA1300, SA1602
+            card,
+            card_header,
+            card_block,
+            list_group,
+            list_group_item,
+            container,
+            container_fluid,
+            row,
+            col,
+            table,
+            table_row,
+            d_flex,
+            p,
+            float_left,
+            float_right,
+            btn_group,
+            btn,
+#pragma warning restore 1591, SA1300, SA1602
         }
 
-        Stack<Item> ident = new Stack<Item>();
-        StringBuilder content = new StringBuilder();
+        readonly Stack<Item> ident = new Stack<Item>();
+        readonly StringBuilder content = new StringBuilder();
 
         void Check(Item item)
         {
@@ -110,7 +118,7 @@ namespace Cave.Web
             Ident(type);
         }
 
-        /// <summary>Closes a div</summary>
+        /// <summary>Closes a div.</summary>
         /// <param name="type">The type.</param>
         public void DivClose(Item type)
         {
@@ -119,7 +127,7 @@ namespace Cave.Web
             content.AppendLine("</div>");
         }
 
-        /// <summary>Creates a div</summary>
+        /// <summary>Creates a div.</summary>
         /// <param name="type">The type.</param>
         /// <param name="html">The HTML.</param>
         /// <param name="subclasses">The subclasses.</param>
@@ -131,8 +139,9 @@ namespace Cave.Web
         }
         #endregion
 
-        #region list        
-        /// <summary>opens a list group</summary>
+        #region list
+
+        /// <summary>opens a list group.</summary>
         /// <param name="subclasses">The subclasses.</param>
         public void ListGroupOpen(string subclasses = null)
         {
@@ -148,14 +157,14 @@ namespace Cave.Web
             Ident(Item.list_group);
         }
 
-        /// <summary>closes a list group</summary>
+        /// <summary>closes a list group.</summary>
         public void ListGroupClose()
         {
             UnIdent(Item.list_group);
             AddHtml("</ul>");
         }
 
-        /// <summary>opens a list group item</summary>
+        /// <summary>opens a list group item.</summary>
         /// <param name="subclasses">The subclasses.</param>
         public void ListGroupItemOpen(string subclasses = null)
         {
@@ -171,7 +180,7 @@ namespace Cave.Web
             Ident(Item.list_group_item);
         }
 
-        /// <summary>closes a list group item</summary>
+        /// <summary>closes a list group item.</summary>
         public void ListGroupItemClose()
         {
             UnIdent(Item.list_group_item);
@@ -179,8 +188,9 @@ namespace Cave.Web
         }
         #endregion
 
-        #region card        
-        /// <summary>opens a card with the specified header text</summary>
+        #region card
+
+        /// <summary>opens a card with the specified header text.</summary>
         /// <param name="header">The header.</param>
         /// <param name="subclasses">The subclasses.</param>
         /// <param name="headerSubclasses">The header subclasses.</param>
@@ -196,7 +206,7 @@ namespace Cave.Web
             DivOpen(Item.card_block);
         }
 
-        /// <summary>opens a card with the specified html header</summary>
+        /// <summary>opens a card with the specified html header.</summary>
         /// <param name="header">The header.</param>
         /// <param name="subclasses">The subclasses.</param>
         /// <param name="headerSubclasses">The header subclasses.</param>
@@ -212,7 +222,7 @@ namespace Cave.Web
             DivOpen(Item.card_block);
         }
 
-        /// <summary>closes a card</summary>
+        /// <summary>closes a card.</summary>
         public void CardClose()
         {
             DivClose(Item.card_block);
@@ -234,7 +244,8 @@ namespace Cave.Web
 
         #endregion
 
-        #region table        
+        #region table
+
         /// <summary>Open a new table.</summary>
         /// <param name="columns">The columns.</param>
         /// <param name="subclasses">The subclasses.</param>
@@ -255,7 +266,7 @@ namespace Cave.Web
             Ident(Item.table);
         }
 
-        /// <summary>Opens a new row at the table</summary>
+        /// <summary>Opens a new row at the table.</summary>
         /// <param name="subclasses">The subclasses.</param>
         public void TableRowOpen(string subclasses = null)
         {
@@ -264,7 +275,7 @@ namespace Cave.Web
             Ident(Item.table_row);
         }
 
-        /// <summary>Creates a cell at the table</summary>
+        /// <summary>Creates a cell at the table.</summary>
         /// <param name="text">The text.</param>
         /// <param name="subclasses">The subclasses.</param>
         public void TableCell(string text, string subclasses = null)
@@ -272,7 +283,7 @@ namespace Cave.Web
             TableHtmlCell(WebUtility.HtmlEncode(text));
         }
 
-        /// <summary>Creates a cell at the table</summary>
+        /// <summary>Creates a cell at the table.</summary>
         /// <param name="html">The HTML.</param>
         /// <param name="subclasses">The subclasses.</param>
         public void TableHtmlCell(string html, string subclasses = null)
@@ -288,14 +299,14 @@ namespace Cave.Web
             }
         }
 
-        /// <summary>Closes the row</summary>
+        /// <summary>Closes the row.</summary>
         public void TableRowClose()
         {
             UnIdent(Item.table_row);
             AddHtml($"</tr>");
         }
 
-        /// <summary>Closes the table</summary>
+        /// <summary>Closes the table.</summary>
         public void TableClose()
         {
             UnIdent(Item.table);
@@ -305,8 +316,9 @@ namespace Cave.Web
         }
         #endregion
 
-        #region paragraph        
-        /// <summary>Creates a new test paragraph</summary>
+        #region paragraph
+
+        /// <summary>Creates a new test paragraph.</summary>
         /// <param name="text">The text.</param>
         /// <param name="subclasses">The subclasses.</param>
         public void ParagraphText(string text, string subclasses = null)
@@ -314,7 +326,7 @@ namespace Cave.Web
             Paragraph(WebUtility.HtmlEncode(text), subclasses);
         }
 
-        /// <summary>Creates a new paragraph</summary>
+        /// <summary>Creates a new paragraph.</summary>
         /// <param name="html">The HTML.</param>
         /// <param name="subclasses">The subclasses.</param>
         public void Paragraph(string html, string subclasses = null)
@@ -325,14 +337,14 @@ namespace Cave.Web
             ParagraphClose();
         }
 
-        /// <summary>Closes a paragraph</summary>
+        /// <summary>Closes a paragraph.</summary>
         public void ParagraphClose()
         {
             UnIdent(Item.p);
             content.AppendLine("</p>");
         }
 
-        /// <summary>Opens a new paragraph</summary>
+        /// <summary>Opens a new paragraph.</summary>
         /// <param name="subclasses">The subclasses.</param>
         public void ParagraphOpen(string subclasses = null)
         {
@@ -362,7 +374,7 @@ namespace Cave.Web
             content.Append("/>");
         }
 
-        /// <summary>Creates a badge</summary>
+        /// <summary>Creates a badge.</summary>
         /// <param name="text">The text.</param>
         /// <param name="subclasses">The subclasses.</param>
         public void Badge(string text, string subclasses = null)
@@ -370,7 +382,7 @@ namespace Cave.Web
             AddHtml(GetBadge(text, subclasses));
         }
 
-        /// <summary>Creates a link</summary>
+        /// <summary>Creates a link.</summary>
         /// <param name="text">The text.</param>
         /// <param name="link">The link.</param>
         /// <param name="subclasses">The subclasses.</param>
@@ -379,7 +391,7 @@ namespace Cave.Web
             AddHtml(GetLink(text, link, subclasses));
         }
 
-        /// <summary>Creates a text</summary>
+        /// <summary>Creates a text.</summary>
         /// <param name="text">The text.</param>
         public void Text(string text)
         {
@@ -395,7 +407,7 @@ namespace Cave.Web
 
         /// <summary>Returns a hash code for this instance.</summary>
         /// <returns>
-        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
         /// </returns>
         public override int GetHashCode()
         {

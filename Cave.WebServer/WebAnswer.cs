@@ -8,7 +8,7 @@ using System.Xml.Linq;
 
 namespace Cave.Web
 {
-    /// <summary>Content to return to the caller</summary>
+    /// <summary>Content to return to the caller.</summary>
     public class WebAnswer
     {
         static CultureInfo Default { get; set; } = new CultureInfo("en-US");
@@ -18,7 +18,7 @@ namespace Cave.Web
         /// <param name="message">The message.</param>
         /// <param name="html">The HTML.</param>
         /// <param name="culture">The culture.</param>
-        /// <returns>Returns a new RestContent instance</returns>
+        /// <returns>Returns a new RestContent instance.</returns>
         public static WebAnswer Html(WebRequest request, WebMessage message, string html, CultureInfo culture = null)
         {
             return new WebAnswer()
@@ -37,7 +37,7 @@ namespace Cave.Web
         /// <param name="message">The message.</param>
         /// <param name="json">The JSON.</param>
         /// <param name="culture">The culture.</param>
-        /// <returns>Returns a new RestContent instance</returns>
+        /// <returns>Returns a new RestContent instance.</returns>
         public static WebAnswer Json(WebRequest request, WebMessage message, string json, CultureInfo culture = null)
         {
             return new WebAnswer()
@@ -56,7 +56,7 @@ namespace Cave.Web
         /// <param name="message">The message.</param>
         /// <param name="xml">The xml.</param>
         /// <param name="culture">The culture.</param>
-        /// <returns>Returns a new RestContent instance</returns>
+        /// <returns>Returns a new RestContent instance.</returns>
         public static WebAnswer Xml(WebRequest request, WebMessage message, XmlSerializer xml, CultureInfo culture = null)
         {
             return new WebAnswer()
@@ -75,7 +75,7 @@ namespace Cave.Web
         /// <param name="message">The message.</param>
         /// <param name="utf8xml">The xml.</param>
         /// <param name="culture">The culture.</param>
-        /// <returns>Returns a new RestContent instance</returns>
+        /// <returns>Returns a new RestContent instance.</returns>
         public static WebAnswer Xml(WebRequest request, WebMessage message, string utf8xml, CultureInfo culture = null)
         {
             return new WebAnswer()
@@ -94,12 +94,12 @@ namespace Cave.Web
         /// <param name="message">The message.</param>
         /// <param name="xdoc">The xdoc.</param>
         /// <param name="culture">The culture.</param>
-        /// <returns>Returns a new RestContent instance</returns>
+        /// <returns>Returns a new RestContent instance.</returns>
         public static WebAnswer Xml(WebRequest request, WebMessage message, XDocument xdoc, CultureInfo culture = null)
         {
             byte[] data;
-            using (MemoryStream ms = new MemoryStream())
-            using (StreamWriter sw = new StreamWriter(ms, Encoding.GetEncoding(xdoc.Declaration.Encoding)))
+            using (var ms = new MemoryStream())
+            using (var sw = new StreamWriter(ms, Encoding.GetEncoding(xdoc.Declaration.Encoding)))
             {
                 xdoc.Save(sw);
                 data = ms.ToArray();
@@ -120,7 +120,7 @@ namespace Cave.Web
         /// <param name="message">The message.</param>
         /// <param name="content">The text.</param>
         /// <param name="culture">The culture.</param>
-        /// <returns>Returns a new RestContent instance</returns>
+        /// <returns>Returns a new RestContent instance.</returns>
         public static WebAnswer Plain(WebRequest request, WebMessage message, string content, CultureInfo culture = null)
         {
             return new WebAnswer()
@@ -139,7 +139,7 @@ namespace Cave.Web
         /// <param name="message">The message.</param>
         /// <param name="data">The data.</param>
         /// <param name="culture">The culture.</param>
-        /// <returns>Returns a new RestContent instance</returns>
+        /// <returns>Returns a new RestContent instance.</returns>
         public static WebAnswer Plain(WebRequest request, WebMessage message, byte[] data, CultureInfo culture = null)
         {
             return new WebAnswer()
@@ -159,7 +159,7 @@ namespace Cave.Web
         /// <param name="data">The data.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="culture">The culture.</param>
-        /// <returns>Returns a new RestContent instance</returns>
+        /// <returns>Returns a new RestContent instance.</returns>
         public static WebAnswer Raw(WebRequest request, WebMessage message, byte[] data, string contentType, CultureInfo culture = null)
         {
             return new WebAnswer()
@@ -180,18 +180,22 @@ namespace Cave.Web
         /// <summary>Initializes a new instance of the <see cref="WebAnswer"/> class.</summary>
         private WebAnswer() { }
 
-        /// <summary>Gets the source (for logging only).</summary>
+        /// <summary>Gets or sets the source (for logging only).</summary>
         /// <value>The source.</value>
         public WebMessage Message { get; set; }
 
-        byte[] m_Data;
+        byte[] contentData;
 
         /// <summary>Gets or sets the data.</summary>
         /// <value>The data.</value>
         public byte[] ContentData
         {
-            get => m_Data;
-            set { Headers["Content-Length"] = value.Length.ToString(); m_Data = value; }
+            get => contentData;
+            set
+            {
+                Headers["Content-Length"] = value.Length.ToString();
+                contentData = value;
+            }
         }
 
         /// <summary>Gets or sets the status code.</summary>
@@ -238,12 +242,12 @@ namespace Cave.Web
         /// <value><c>true</c> if [close after answer]; otherwise, <c>false</c>.</value>
         public bool CloseAfterAnswer { get; set; }
 
-        /// <summary>The headers</summary>
+        /// <summary>The headers.</summary>
         public readonly Dictionary<string, string> Headers = new Dictionary<string, string>();
 
         /// <summary>Sets the cache time.</summary>
         /// <param name="cacheTime">The cache time.</param>
-        /// <exception cref="ArgumentOutOfRangeException">cacheTime</exception>
+        /// <exception cref="ArgumentOutOfRangeException">cacheTime.</exception>
         public void SetCacheTime(TimeSpan cacheTime)
         {
             if (Headers.ContainsKey("Cache-Control"))

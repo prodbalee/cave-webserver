@@ -9,24 +9,21 @@ using Cave.Net;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides available html parts or the result
+    /// Provides available html parts or the result.
     /// </summary>
     public sealed class HtmlPageBuilder
     {
-        WebRequest Request;
+        readonly WebRequest request;
 
-        /// <summary>Creates a new <see cref="HtmlPageBuilder"/> instance using the specified request.</summary>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HtmlPageBuilder"/> class.
+        /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException">request</exception>
+        /// <exception cref="ArgumentNullException">request.</exception>
         public HtmlPageBuilder(WebRequest request)
         {
-            if (request == null)
-            {
-                throw new ArgumentNullException("request");
-            }
-
-            Request = request;
+            this.request = request ?? throw new ArgumentNullException("request");
             AddHeader(Properties.Resources.CaveWebServerHeaders);
             AddFooter($"&nbsp;<hr><address>{request.Server.ServerVersionString} Server at {NetTools.HostName} Port {request.LocalPort}<br>&copy {request.Server.ServerCopyRight}</address>");
             string protocol = (request.Server.Certificate == null) ? "http://" : "https://";
@@ -39,16 +36,16 @@ namespace Cave.Web
             }
         }
 
-        /// <summary>The footer</summary>
+        /// <summary>Gets the footer.</summary>
         public StringBuilder Footer { get; } = new StringBuilder();
 
-        /// <summary>The header</summary>
+        /// <summary>Gets the header.</summary>
         public StringBuilder Header { get; } = new StringBuilder();
 
-        /// <summary>The content</summary>
+        /// <summary>Gets the content.</summary>
         public Bootstrap4 Content { get; } = new Bootstrap4();
 
-        /// <summary>The breadcrump</summary>
+        /// <summary>Gets the breadcrump.</summary>
         public List<WebLink> Breadcrump { get; } = new List<WebLink>();
 
         /// <summary>Initializes a new instance of the <see cref="HtmlPageBuilder"/> class.</summary>
@@ -102,7 +99,7 @@ namespace Cave.Web
         /// <returns></returns>
         public WebAnswer ToAnswer(WebMessage message)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.AppendLine("<!DOCTYPE html>");
             sb.AppendLine($"<html><head><title>{WebUtility.HtmlEncode(message.Source)}</title>");
             sb.Append(Header);
@@ -150,7 +147,7 @@ namespace Cave.Web
             sb.Append(Footer);
             sb.AppendLine("</div>");
             sb.AppendLine("</body></html>");
-            return WebAnswer.Html(Request, message, sb.ToString());
+            return WebAnswer.Html(request, message, sb.ToString());
         }
     }
 }

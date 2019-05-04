@@ -10,17 +10,18 @@ using Cave.IO;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides automatic documentation for rpc functions
+    /// Provides automatic documentation for rpc functions.
     /// </summary>
     public class WebExplain
     {
-        XNetDoc documentation;
+        readonly XNetDoc documentation;
 
         /// <summary>Initializes a new instance of the <see cref="WebExplain"/> class.</summary>
         public WebExplain()
         {
             documentation = XNetDoc.FromProgramPath();
-            //we dont need properties
+
+            // we dont need properties
             documentation.Properties.Clear();
         }
 
@@ -76,9 +77,9 @@ namespace Cave.Web
 
         void ExplainFunction(WebData data, WebServerMethod function)
         {
-            HtmlPageBuilder html = new HtmlPageBuilder(data.Request);
+            var html = new HtmlPageBuilder(data.Request);
             {
-                string path = "";
+                string path = string.Empty;
                 string[] parts = function.FullPaths.First().Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
                 int last = parts.Length - 1;
                 for (int n = 0; n < parts.Length; n++)
@@ -92,14 +93,15 @@ namespace Cave.Web
             WebServerAuthType authType = function.PageAttribute?.AuthType ?? WebServerAuthType.None;
             {
                 string link = function.FullPaths.First();
-                Bootstrap4 head = new Bootstrap4();
+                var head = new Bootstrap4();
                 if (authType != WebServerAuthType.None)
                 {
-                    //head.DivOpen(Bootstrap4.Item.float_right);
+                    // head.DivOpen(Bootstrap4.Item.float_right);
                     head.DivOpen(Bootstrap4.Item.float_right);
                     AddBadges(head, function.PageAttribute);
                     head.DivClose(Bootstrap4.Item.float_right);
-                    //head.AddHtml("<br/>");
+
+                    // head.AddHtml("<br/>");
                 }
                 head.AddHtml("<h2>");
                 head.AddHtml(function.Method.Name.SplitCamelCase().Join("&nbsp;"));
@@ -137,7 +139,7 @@ namespace Cave.Web
             content.ListGroupClose();
             content.CardClose();
             content.AddHtml("&nbsp;");
-            WebMessage message = WebMessage.Create("Explain " + function.Name, string.Format("Explain function {0}", function));
+            var message = WebMessage.Create("Explain " + function.Name, string.Format("Explain function {0}", function));
             data.Answer = html.ToAnswer(message);
         }
 
@@ -173,7 +175,7 @@ namespace Cave.Web
                     ExplainEnum(data, t);
                     return;
                 }
-                if (!t.IsPrimitive && t.IsValueType) //struct
+                if (!t.IsPrimitive && t.IsValueType)
                 {
                     ExplainStruct(data, t);
                     return;
@@ -184,7 +186,7 @@ namespace Cave.Web
 
         void ExplainEnum(WebData data, Type t)
         {
-            HtmlPageBuilder html = new HtmlPageBuilder(data.Request);
+            var html = new HtmlPageBuilder(data.Request);
             html.Breadcrump.Add(new WebLink() { Text = t.FullName });
             Bootstrap4 content = html.Content;
             content.CardOpenText($"Enum {t.Name}");
@@ -199,16 +201,16 @@ namespace Cave.Web
             content.ListGroupClose();
             content.CardClose();
             content.AddHtml("&nbsp;");
-            WebMessage message = WebMessage.Create("Explain " + t.Name, string.Format("Explain enum {0}", t.Name));
+            var message = WebMessage.Create("Explain " + t.Name, string.Format("Explain enum {0}", t.Name));
             data.Answer = html.ToAnswer(message);
         }
 
         void ExplainStruct(WebData data, Type t)
         {
-            HtmlPageBuilder html = new HtmlPageBuilder(data.Request);
+            var html = new HtmlPageBuilder(data.Request);
             html.Breadcrump.Add(new WebLink() { Text = t.FullName });
             Bootstrap4 content = html.Content;
-            RowLayout layout = RowLayout.CreateTyped(t);
+            var layout = RowLayout.CreateTyped(t);
             content.CardOpen($"<h2>Struct {t.Name}<h2><h4>Table {layout.Name}</h4>{layout.FieldCount} Fields, {t.AssemblyQualifiedName}");
 
             DocumentHtml(content, documentation.GetType(t), t.ToString());
@@ -222,7 +224,7 @@ namespace Cave.Web
             content.ListGroupClose();
             content.CardClose();
             content.AddHtml("&nbsp;");
-            WebMessage message = WebMessage.Create("Explain " + t.Name, string.Format("Explain struct {0}", t.Name));
+            var message = WebMessage.Create("Explain " + t.Name, string.Format("Explain struct {0}", t.Name));
             data.Answer = html.ToAnswer(message);
         }
 
@@ -235,7 +237,7 @@ namespace Cave.Web
 
             if (textType != null)
             {
-                className = ($"{className} " + textType == null ? "" : "text-" + textType).Trim();
+                className = ($"{className} " + textType == null ? string.Empty : "text-" + textType).Trim();
             }
 
             foreach (XNode n in XElement.Parse($"<data>{data}</data>").Nodes())
@@ -250,7 +252,7 @@ namespace Cave.Web
                         Type t = AppDom.FindType(s, AppDom.LoadMode.NoException);
                         if (t != null && t.IsValueType && !t.IsEnum && !t.IsPrimitive)
                         {
-                            RowLayout layout = RowLayout.CreateTyped(t);
+                            var layout = RowLayout.CreateTyped(t);
                             content.Link($"Table {layout.Name}", "/Explain?type=" + s, textType == null ? null : "btn btn-sm btn-outline-" + textType);
                             done = true;
                         }
@@ -345,13 +347,13 @@ namespace Cave.Web
 
         void ExplainFunctionList(WebData data)
         {
-            HtmlPageBuilder html = new HtmlPageBuilder(data.Request);
+            var html = new HtmlPageBuilder(data.Request);
 
             IEnumerable<KeyValuePair<string, WebServerMethod>> paths = data.Server.RegisteredPaths;
 
             if (data.Request.Parameters.TryGetValue("functions", out string functions))
             {
-                string path = "";
+                string path = string.Empty;
                 string[] parts = functions.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
                 for (int n = 0; n < parts.Length; n++)
                 {
@@ -370,8 +372,8 @@ namespace Cave.Web
             {
                 WebServerMethod function = item.Key;
 
-                //if (item.Key == "/") continue;
-                content.ListGroupItemOpen((0 == i++ % 2 ? " list-group-item-info" : null));
+                // if (item.Key == "/") continue;
+                content.ListGroupItemOpen(i++ % 2 == 0 ? " list-group-item-info" : null);
                 XNetDocItem doc = documentation.GetMethod(function.Method);
 
                 content.AddHtml("<div style=\"width:100%\">");
@@ -440,13 +442,13 @@ namespace Cave.Web
             }
             content.ListGroupClose();
             content.AddHtml("&nbsp;");
-            WebMessage message = WebMessage.Create("Explain", functions == null ? "Explain functions." : $"Explain {functions} functions.");
+            var message = WebMessage.Create("Explain", functions == null ? "Explain functions." : $"Explain {functions} functions.");
             data.Answer = html.ToAnswer(message);
         }
 
         void FieldHtml(Bootstrap4 content, int i, object value, XNetDocItem doc)
         {
-            content.ListGroupItemOpen("justify-content-between" + (0 == i % 2 ? " list-group-item-info" : null));
+            content.ListGroupItemOpen("justify-content-between" + (i % 2 == 0 ? " list-group-item-info" : null));
             if (value is FieldProperties field)
             {
                 content.ParagraphText($"{field.DataType} {field.Name}", "col-2");
@@ -477,13 +479,14 @@ namespace Cave.Web
 
         void ParameterHtml(Bootstrap4 content, int i, ParameterInfo parameter, XNetDocItem xMethodDoc)
         {
-            content.ListGroupItemOpen("justify-content-between" + (0 == i % 2 ? " list-group-item-info" : null));
+            content.ListGroupItemOpen("justify-content-between" + (i % 2 == 0 ? " list-group-item-info" : null));
 
             string typeName = parameter.ParameterType.Name;
             if (parameter.ParameterType.Name == "Nullable`1")
             {
                 typeName = parameter.ParameterType.GetGenericArguments().Last().Name;
-                //typeName = parameter.ParameterType.GenericTypeArguments.Last().Name;
+
+                // typeName = parameter.ParameterType.GenericTypeArguments.Last().Name;
             }
 
             content.ParagraphText($"{typeName} {parameter.Name}", "col-sm-2 col-12");
@@ -491,7 +494,8 @@ namespace Cave.Web
                 string doc = null;
                 xMethodDoc?.Parameters.TryGetValue(parameter.Name, out doc);
                 Paragraph("col-sm-8 col-12", content, doc, null);
-                //content.ParagraphText(doc, "col-8");
+
+                // content.ParagraphText(doc, "col-8");
             }
             content.ParagraphOpen("col-sm-2 col-12");
             if (parameter.IsOptional)

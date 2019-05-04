@@ -183,7 +183,7 @@ namespace Test
         public void CaveJsonTest()
         {
             string jsonString = "{\"obj\":{\"o1\": \"v1\",\"o2\": \"v2\"},\"arr\":[0,1,2],\"true\": true,\"false\":false,\"null\":null}";
-            var reader = GetReader(jsonString);
+            JsonReader reader = GetReader(jsonString);
             JsonNode objNode = reader.Root["obj"];
 
             // object node
@@ -226,19 +226,19 @@ namespace Test
         [Test]
         public void ErrorTests()
         {
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(string.Empty); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader(" "); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("["); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("[,]"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("[1,]"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("a"); });
-            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("\""); });
-            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("\"a"); });
-            Assert.Throws(typeof(EndOfStreamException), delegate () { this.GetReader("{\"a}"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\"}"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\":}"); });
-            Assert.Throws(typeof(InvalidDataException), delegate () { this.GetReader("{\"a\":\"b\",}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader(string.Empty); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader(" "); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader("{"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader("["); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader("[,]"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader("[1,]"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader("a"); });
+            Assert.Throws(typeof(EndOfStreamException), delegate () { GetReader("\""); });
+            Assert.Throws(typeof(EndOfStreamException), delegate () { GetReader("\"a"); });
+            Assert.Throws(typeof(EndOfStreamException), delegate () { GetReader("{\"a}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader("{\"a\"}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader("{\"a\":}"); });
+            Assert.Throws(typeof(InvalidDataException), delegate () { GetReader("{\"a\":\"b\",}"); });
         }
 
     }

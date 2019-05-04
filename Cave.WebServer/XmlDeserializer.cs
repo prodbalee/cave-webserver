@@ -14,17 +14,17 @@ namespace Cave.Web
     /// </summary>
     public class XmlDeserializer
     {
-        Dictionary<string, ITable> m_Tables;
-        string m_StringMarker;
+        Dictionary<string, ITable> tables;
+        string stringMarker;
 
         void InternalParse(XDocument doc)
         {
-            if (m_Tables != null)
+            if (tables != null)
             {
                 throw new InvalidOperationException("Parse was already called!");
             }
 
-            m_Tables = new Dictionary<string, ITable>();
+            tables = new Dictionary<string, ITable>();
 
             XElement root = doc.Root;
             if (root.Name.LocalName != "CaveXML")
@@ -38,7 +38,7 @@ namespace Cave.Web
             }
             else
             {
-                Version ver = new Version(root.Attribute("Version").Value);
+                var ver = new Version(root.Attribute("Version").Value);
                 if (ver.ToString() == "1.0")
                 {
                     Version = 1;
@@ -51,9 +51,9 @@ namespace Cave.Web
 
             switch (Version)
             {
-                case 1: m_StringMarker = null; break;
+                case 1: stringMarker = null; break;
                 case 2:
-                case 3: m_StringMarker = "'"; break;
+                case 3: stringMarker = "'"; break;
                 default: throw new Exception("Invalid CaveXML Version!");
             }
 
@@ -63,7 +63,7 @@ namespace Cave.Web
                 {
                     case "Table":
                         ITable table = ParseTable(element);
-                        m_Tables.Add(table.Name, table);
+                        tables.Add(table.Name, table);
                         break;
                     default: throw new InvalidDataException(string.Format("Unknown tree type {0}", element.Name.LocalName));
                 }
@@ -147,14 +147,14 @@ namespace Cave.Web
             foreach (XAttribute field in xRow.Attributes())
             {
                 int i = table.Layout.GetFieldIndex(field.Name.LocalName);
-                row[i] = table.Layout.ParseValue(i, field.Value, m_StringMarker, CultureInfo.InvariantCulture);
+                row[i] = table.Layout.ParseValue(i, field.Value, stringMarker, CultureInfo.InvariantCulture);
             }
             table.Insert(new Row(row));
         }
 
         RowLayout ParseLayout(string tableName, XElement xLayout)
         {
-            List<FieldProperties> fields = new List<FieldProperties>();
+            var fields = new List<FieldProperties>();
             int fieldCount = int.Parse(xLayout.Attribute("FieldCount").Value);
 
             foreach (XElement element in xLayout.Elements())
@@ -180,7 +180,7 @@ namespace Cave.Web
         FieldProperties ParseField(string tableName, XElement xField)
         {
             string name = xField.Attribute("Name").Value;
-            DataType dataType = (DataType)Enum.Parse(typeof(DataType), xField.Attribute("DataType").Value);
+            var dataType = (DataType)Enum.Parse(typeof(DataType), xField.Attribute("DataType").Value);
             FieldFlags flags = FieldFlags.None;
             Type valueType = null;
             StringEncoding stringEncoding = StringEncoding.Undefined;
@@ -211,7 +211,7 @@ namespace Cave.Web
             if (typeName.StartsWith("Cave.Web.Auth."))
             {
                 typeName = typeName.Replace("Cave.Web.Auth.", "Cave.Auth.");
-            }            
+            }
 
             return AppDom.FindType(typeName, mode);
         }
@@ -220,7 +220,7 @@ namespace Cave.Web
         /// <param name="data">The data.</param>
         public void Parse(byte[] data)
         {
-            using (MemoryStream ms = new MemoryStream(data))
+            using (var ms = new MemoryStream(data))
             {
                 Parse(ms);
             }
@@ -230,7 +230,7 @@ namespace Cave.Web
         /// <param name="stream">The stream.</param>
         public void Parse(Stream stream)
         {
-            using (StreamReader sr = new StreamReader(stream))
+            using (var sr = new StreamReader(stream))
             {
                 Parse(XDocument.Load(sr));
             }
@@ -238,7 +238,7 @@ namespace Cave.Web
 
         /// <summary>Parses the specified document.</summary>
         /// <param name="doc">The document.</param>
-        /// <exception cref="System.Exception">Malformed CaveXML. Mandatory attribute could not be found!</exception>
+        /// <exception cref="Exception">Malformed CaveXML. Mandatory attribute could not be found!.</exception>
         public void Parse(XDocument doc)
         {
             try
@@ -261,25 +261,24 @@ namespace Cave.Web
 
         /// <summary>Gets the table names.</summary>
         /// <value>The table names.</value>
-        public ICollection<string> TableNames => m_Tables.Keys;
+        public ICollection<string> TableNames => tables.Keys;
 
         /// <summary>Gets the tables.</summary>
         /// <value>The tables.</value>
-        public ICollection<ITable> Tables => m_Tables.Values;
+        public ICollection<ITable> Tables => tables.Values;
 
         /// <summary>Gets a row result from the specified table.</summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="tableName">Name of the table.</param>
-        /// <param name="throwError">Throw an exception on multiple results</param>
+        /// <param name="throwError">Throw an exception on multiple results.</param>
         /// <returns></returns>
-        /// <exception cref="InvalidDataException">
-        /// </exception>
         /// <remarks>
         /// This can only be used to get single row results! For multi row results use
         /// <see cref="GetTable(string)" />, <see cref="GetTable{T}(string)" />
         /// or the <see cref="Tables" /> property.
         /// </remarks>
-        public T GetRow<T>(string tableName = null, bool throwError = false) where T : struct
+        public T GetRow<T>(string tableName = null, bool throwError = false)
+            where T : struct
         {
             if (tableName == null)
             {
@@ -302,7 +301,7 @@ namespace Cave.Web
                 {
                     throw new InvalidDataException(string.Format("No dataset at table {0}", tableName));
                 }
-                return new T();
+                return default(T);
             }
             return value.Value;
         }
@@ -312,7 +311,7 @@ namespace Cave.Web
         /// <returns><c>true</c> if the specified table is present; otherwise, <c>false</c>.</returns>
         public bool HasTable(string tableName)
         {
-            return m_Tables.ContainsKey(tableName);
+            return tables.ContainsKey(tableName);
         }
 
         /// <summary>Gets the table with the specified name.</summary>
@@ -320,16 +319,17 @@ namespace Cave.Web
         /// <returns></returns>
         public ITable GetTable(string tableName)
         {
-            return m_Tables[tableName];
+            return tables[tableName];
         }
 
         /// <summary>Gets the table with the specified name.</summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public ITable<T> GetTable<T>(string name = null) where T : struct
+        public ITable<T> GetTable<T>(string name = null)
+            where T : struct
         {
-            MemoryTable<T> result = new MemoryTable<T>();
+            var result = new MemoryTable<T>();
             if (name == null)
             {
                 name = result.Name;

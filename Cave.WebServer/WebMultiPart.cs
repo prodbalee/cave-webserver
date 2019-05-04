@@ -7,7 +7,7 @@ using Cave.IO;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides multi part content
+    /// Provides multi part content.
     /// </summary>
     public class WebMultiPart
     {
@@ -22,33 +22,45 @@ namespace Cave.Web
         /// <exception cref="InvalidDataException">
         /// Invalid header in multi part content!
         /// or
-        /// Invalid data after multi part content!
+        /// Invalid data after multi part content!.
         /// </exception>
         public static WebMultiPart Parse(DataReader reader, string boundary)
         {
             boundary = "--" + boundary;
             byte[] binaryBoundary = Encoding.UTF8.GetBytes(boundary);
-            WebMultiPart result = new WebMultiPart();
-            //first part is main content, we do not have addition headers there
+            var result = new WebMultiPart();
+
+            // first part is main content, we do not have addition headers there
             bool inHeader = true;
-            WebSinglePart part = new WebSinglePart();
+            var part = new WebSinglePart();
             while (true)
             {
                 if (inHeader)
                 {
                     string line = reader.ReadLine();
-                    //end of header ?
-                    if (line.Length == 0) { inHeader = false; continue; }
-                    //boundary ?
+
+                    // end of header ?
+                    if (line.Length == 0)
+                    {
+                        inHeader = false;
+                        continue;
+                    }
+
+                    // boundary ?
                     if (line.StartsWith("--"))
                     {
-                        //end of data ?
-                        //if (line == "--") break;
-                        //next part ?
-                        if (line == boundary) { part = new WebSinglePart(); continue; }
+                        // end of data ?
+                        // if (line == "--") break;
+                        // next part ?
+                        if (line == boundary)
+                        {
+                            part = new WebSinglePart();
+                            continue;
+                        }
                         throw new WebServerException(WebError.UnknownContent, 0, "Invalid header in multi part content!");
                     }
-                    //read header value
+
+                    // read header value
                     string[] kv = line.Split(new char[] { ':' }, 2);
                     if (kv.Length < 2)
                     {
@@ -57,8 +69,9 @@ namespace Cave.Web
 
                     part.Headers.Add(kv[0].Trim().ToLower(), kv[1].Trim());
                 }
-                else //content
+                else
                 {
+                    // content
                     byte[] buffer = new byte[1024 * 1024];
                     int offset = 0;
                     reader.ReadUntil(buffer, ref offset, false, binaryBoundary);
@@ -68,11 +81,12 @@ namespace Cave.Web
                     part = new WebSinglePart();
                     inHeader = true;
                     string endOfData = reader.ReadLine();
-                    //end of data ?
+
+                    // end of data ?
                     if (endOfData == "--")
                     {
-                        //var empty = reader.ReadLine();
-                        //if (empty != "") throw new CaveWebException(CaveWebError.UnknownContent, "Invalid data after end of multi part content!");
+                        // var empty = reader.ReadLine();
+                        // if (empty != "") throw new CaveWebException(CaveWebError.UnknownContent, "Invalid data after end of multi part content!");
                         break;
                     }
                     if (endOfData.Length != 0)
@@ -92,7 +106,11 @@ namespace Cave.Web
         {
             foreach (WebSinglePart p in Parts)
             {
-                if (p.Name == name) { part = p; return true; }
+                if (p.Name == name)
+                {
+                    part = p;
+                    return true;
+                }
             }
             part = null;
             return false;

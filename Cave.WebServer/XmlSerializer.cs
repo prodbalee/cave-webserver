@@ -7,12 +7,12 @@ using Cave.Data;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides Row based serialization for the CaveXML format
+    /// Provides Row based serialization for the CaveXML format.
     /// </summary>
     public class XmlSerializer
     {
         /// <summary>
-        /// Settings used during de/serialization
+        /// Settings used during de/serialization.
         /// </summary>
         [Flags]
         public enum Flags
@@ -24,7 +24,7 @@ namespace Cave.Web
             WithLayout = 1,
         }
 
-        Queue<XElement> path = new Queue<XElement>();
+        readonly Queue<XElement> path = new Queue<XElement>();
 
         #region private Data Serializer
         XElement SerializeRow(RowLayout layout, Row row)
@@ -34,7 +34,7 @@ namespace Cave.Web
                 throw new Exception($"Structure {layout} needs to define an ID field!");
             }
 
-            XElement xRow = new XElement("Row");
+            var xRow = new XElement("Row");
             for (int i = 0; i < layout.FieldCount; i++)
             {
                 FieldProperties field = layout.GetProperties(i);
@@ -46,7 +46,7 @@ namespace Cave.Web
 
         XElement StartSerializeTable(string name, RowLayout layout, long rowCount)
         {
-            XElement xtable = new XElement("Table");
+            var xtable = new XElement("Table");
             xtable.SetAttributeValue("Name", name);
             xtable.SetAttributeValue("RowCount", rowCount);
             if (layout.IsTyped)
@@ -54,9 +54,9 @@ namespace Cave.Web
                 xtable.Add(new XElement("RowType", layout.RowType.FullName));
             }
 
-            if (0 != (Mode & Flags.WithLayout))
+            if ((Mode & Flags.WithLayout) != 0)
             {
-                XElement xlayout = layout.ToXElement();
+                var xlayout = layout.ToXElement();
                 xtable.Add(xlayout);
             }
             return xtable;
@@ -81,13 +81,13 @@ namespace Cave.Web
                 default: throw new NotSupportedException();
             }
 
-            Root.SetAttributeValue("Layout", (0 != (mode & Flags.WithLayout)).ToString());
+            Root.SetAttributeValue("Layout", ((mode & Flags.WithLayout) != 0).ToString());
         }
 
-        /// <summary>The root element</summary>
+        /// <summary>The root element.</summary>
         public XElement Root;
 
-        /// <summary>Gets or sets the mode.</summary>
+        /// <summary>Gets the mode.</summary>
         /// <value>The mode.</value>
         public Flags Mode { get; }
 
@@ -103,7 +103,7 @@ namespace Cave.Web
         {
             if (Version > 2)
             {
-                XElement newRoot = new XElement(name);
+                var newRoot = new XElement(name);
                 Root.Add(newRoot);
                 path.Enqueue(Root);
                 Root = newRoot;
@@ -123,9 +123,10 @@ namespace Cave.Web
         /// <typeparam name="T"></typeparam>
         /// <param name="name">The name.</param>
         /// <param name="item">The item.</param>
-        public void Serialize<T>(string name, T item) where T : struct
+        public void Serialize<T>(string name, T item)
+            where T : struct
         {
-            RowLayout layout = RowLayout.CreateTyped(typeof(T));
+            var layout = RowLayout.CreateTyped(typeof(T));
             XElement xTable = StartSerializeTable(name, layout, 1);
             XElement xRow = SerializeRow(layout, Row.Create(layout, item));
             xTable.Add(xRow);
@@ -136,15 +137,16 @@ namespace Cave.Web
         /// <typeparam name="T"></typeparam>
         /// <param name="name">The name.</param>
         /// <param name="items">The items.</param>
-        /// <exception cref="System.ArgumentNullException">Items</exception>
-        public void Serialize<T>(string name, T[] items) where T : struct
+        /// <exception cref="ArgumentNullException">Items.</exception>
+        public void Serialize<T>(string name, T[] items)
+            where T : struct
         {
             if (items == null)
             {
                 throw new ArgumentNullException("Items");
             }
 
-            RowLayout layout = RowLayout.CreateTyped(typeof(T));
+            var layout = RowLayout.CreateTyped(typeof(T));
             XElement xTable = StartSerializeTable(name, layout, items.Length);
             foreach (T item in items)
             {
@@ -158,15 +160,16 @@ namespace Cave.Web
         /// <typeparam name="T"></typeparam>
         /// <param name="name">The name.</param>
         /// <param name="items">The items.</param>
-        /// <exception cref="System.ArgumentNullException">Items</exception>
-        public void Serialize<T>(string name, IList<T> items) where T : struct
+        /// <exception cref="ArgumentNullException">Items.</exception>
+        public void Serialize<T>(string name, IList<T> items)
+            where T : struct
         {
             if (items == null)
             {
                 throw new ArgumentNullException("Items");
             }
 
-            RowLayout layout = RowLayout.CreateTyped(typeof(T));
+            var layout = RowLayout.CreateTyped(typeof(T));
             XElement xTable = StartSerializeTable(name, layout, items.Count);
             foreach (T item in items)
             {
@@ -179,10 +182,10 @@ namespace Cave.Web
         /// <summary>Serializes the specified table.</summary>
         /// <param name="name">The name.</param>
         /// <param name="table">The table.</param>
-        /// <exception cref="System.ArgumentNullException">Items</exception>
+        /// <exception cref="ArgumentNullException">Items.</exception>
         /// <exception cref="ArgumentNullException">Table
         /// or
-        /// Writer</exception>
+        /// Writer.</exception>
         public void Serialize(string name, ITable table)
         {
             if (table == null)
@@ -203,16 +206,16 @@ namespace Cave.Web
         /// <param name="name">The name.</param>
         /// <param name="layout">The layout.</param>
         /// <param name="rows">The rows.</param>
-        /// <exception cref="System.ArgumentNullException">
+        /// <exception cref="ArgumentNullException">
         /// Rows
         /// or
-        /// Layout
+        /// Layout.
         /// </exception>
         /// <exception cref="ArgumentNullException">Rows
         /// or
         /// Layout
         /// or
-        /// Writer</exception>
+        /// Writer.</exception>
         public void Serialize(string name, RowLayout layout, IList<Row> rows)
         {
             if (rows == null)
@@ -246,7 +249,7 @@ namespace Cave.Web
         /// <returns></returns>
         public byte[] ToArray()
         {
-            using (MemoryStream s = new MemoryStream())
+            using (var s = new MemoryStream())
             {
                 WriteTo(s);
                 return s.ToArray();

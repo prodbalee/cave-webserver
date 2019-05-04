@@ -12,7 +12,7 @@ using Cave.IO;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides session data for embedded web server
+    /// Provides session data for embedded web server.
     /// </summary>
     public class WebSession
     {
@@ -20,33 +20,34 @@ namespace Cave.Web
 
         /// <summary>Loads the session.</summary>
         /// <param name="request">The request.</param>
-        /// <returns>Returns a new session instance</returns>
+        /// <returns>Returns a new session instance.</returns>
         public static WebSession LoadSession(WebRequest request)
         {
-            UserSession userSession = new UserSession()
+            var userSession = new UserSession()
             {
                 Expiration = DateTime.UtcNow + request.Server.SessionTimeout,
                 Source = request.SourceAddress,
                 UserAgent = request.UserAgent,
             };
 
-            //try load session=value from header, parse and check > 0
+            // try load session=value from header, parse and check > 0
             {
                 if (request.Headers.TryGetValue("session", out string value) && long.TryParse(value, out long sessionID) && sessionID > 0)
                 {
                     userSession.ID = sessionID;
                 }
             }
-            //try load cookie
+
+            // try load cookie
             {
                 if (request.Headers.TryGetValue("cookie", out string cookie))
                 {
                     foreach (string part in cookie.Split(';'))
                     {
-                        Option opt = Option.Parse(part);
+                        var opt = Option.Parse(part);
                         if (opt.Name.Trim() == "Session")
                         {
-                            //load existing
+                            // load existing
                             if (long.TryParse(opt.Value, out long sessionID) && sessionID > 0)
                             {
                                 userSession.ID = sessionID;
@@ -56,7 +57,8 @@ namespace Cave.Web
                     }
                 }
             }
-            //check load session
+
+            // check load session
             if (userSession.ID != 0)
             {
                 Search sessionSearch =
@@ -65,7 +67,7 @@ namespace Cave.Web
 
                 if (request.Server.RequireSessionSourceCheck)
                 {
-                    IPAddress ip = IPAddress.Parse(userSession.Source);
+                    var ip = IPAddress.Parse(userSession.Source);
                     if (ip.AddressFamily == AddressFamily.InterNetworkV6 && !ip.ToString().Contains("."))
                     {
                         byte[] bytes = ip.GetAddressBytes();
@@ -94,12 +96,12 @@ namespace Cave.Web
                     }
                 }
 
-                //load old session
+                // load old session
                 userSession.ID = 0;
-                var sessions = request.Server.AuthTables.UserSessions.GetStructs(sessionSearch);
+                IList<UserSession> sessions = request.Server.AuthTables.UserSessions.GetStructs(sessionSearch);
                 foreach (UserSession session in sessions)
                 {
-                    //session expired or session already loaded ? (duplicate)
+                    // session expired or session already loaded ? (duplicate)
                     if (session.IsExpired() || userSession.ID != 0)
                     {
                         request.Server.AuthTables.UserSessions.TryDelete(session.ID);
@@ -115,7 +117,7 @@ namespace Cave.Web
             }
             if (userSession.ID == 0)
             {
-                //save created session
+                // save created session
                 if (request.Server.SessionMode != WebServerSessionMode.None)
                 {
                     while (true)
@@ -135,9 +137,9 @@ namespace Cave.Web
             }
             else
             {
-                //update at db
+                // update at db
                 userSession.Expiration = DateTime.UtcNow + request.Server.SessionTimeout;
-                Task.Factory.StartNew(delegate
+                Task.Factory.StartNew(() =>
                 {
                     request.Server.AuthTables.UserSessions.TryUpdate(userSession);
                     request.Server.AuthTables.UserSessions.TryDelete(Search.FieldSmaller(nameof(Cave.Auth.UserSession.Expiration), DateTime.UtcNow));
@@ -148,7 +150,7 @@ namespace Cave.Web
 
         #endregion
 
-        WebServer server;
+        readonly WebServer server;
         User user;
 
         /// <summary>Initializes a new instance of the <see cref="WebSession" /> class.</summary>
@@ -174,11 +176,11 @@ namespace Cave.Web
 
         /// <summary>Sets the authentication.</summary>
         /// <param name="user">The user.</param>
-        /// <param name="flags">Used internally to define local host usage</param>
-        /// <exception cref="Cave.Web.WebServerException">
+        /// <param name="flags">Used internally to define local host usage.</param>
+        /// <exception cref="WebServerException">
         /// Authentication not allowed!
         /// or
-        /// Session belongs to another user!
+        /// Session belongs to another user!.
         /// </exception>
         public void SetAuthentication(User user, UserSessionFlags flags)
         {
@@ -198,10 +200,11 @@ namespace Cave.Web
                 throw new WebServerException(WebError.InternalServerError, "Session belongs to another user!");
             }
 
-            //set session authenticated
+            // set session authenticated
             userSession.Expiration = DateTime.UtcNow + server.SessionTimeout;
             userSession.UserID = user.ID;
-            //update session at db
+
+            // update session at db
             if (server.AuthTables.UserSessions is IMemoryTable)
             {
                 server.AuthTables.UserSessions.TryUpdate(userSession);
@@ -210,7 +213,8 @@ namespace Cave.Web
             {
                 Task.Factory.StartNew((s) => { server.AuthTables.UserSessions.TryUpdate((UserSession)s); }, userSession);
             }
-            //set globals
+
+            // set globals
             UserSession = userSession;
         }
 

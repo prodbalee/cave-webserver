@@ -23,7 +23,7 @@ namespace TestWebServer
 
         void Run()
         {
-            WebServerTest server = new WebServerTest();
+            var server = new WebServerTest();
             server.Server.Register(this);
             exit.WaitOne();
             // Wait for shut down

@@ -9,7 +9,7 @@ namespace Test
     {
         static int Main(string[] args)
         {
-            var errors = 0;
+            int errors = 0;
             Type[] types = typeof(Program).Assembly.GetTypes();
             foreach (Type type in types.OrderBy(t => t.Name))
             {
@@ -18,7 +18,7 @@ namespace Test
                     continue;
                 }
 
-                var instance = Activator.CreateInstance(type);
+                object instance = Activator.CreateInstance(type);
                 foreach (System.Reflection.MethodInfo method in type.GetMethods())
                 {
                     if (!method.GetCustomAttributes(typeof(TestAttribute), false).Any())

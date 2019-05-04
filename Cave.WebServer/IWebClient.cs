@@ -3,7 +3,7 @@
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a web client interface
+    /// Provides a web client interface.
     /// </summary>
     public interface IWebClient
     {

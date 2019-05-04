@@ -13,10 +13,11 @@ using Cave.Net.Dns;
 namespace Cave.Web.Auth
 {
     /// <summary>
-    /// Provides an authentication interface for <see cref="WebServer"/>
+    /// Provides an authentication interface for <see cref="WebServer"/>.
     /// </summary>
-    /// <typeparam name="T">The UserLevel enum (int)</typeparam>
-    public class AuthInterface<T> where T : IConvertible
+    /// <typeparam name="T">The UserLevel enum (int).</typeparam>
+    public class AuthInterface<T>
+        where T : IConvertible
     {
         AuthMailSender authMailSender;
 
@@ -43,7 +44,7 @@ namespace Cave.Web.Auth
                 case WebServerAuthType.None: return;
                 case WebServerAuthType.Basic:
                 {
-                    if (true == e.Data.Server.AuthTables.Login(e.Username, e.Password, out User user, out EmailAddress email))
+                    if (e.Data.Server.AuthTables.Login(e.Username, e.Password, out User user, out EmailAddress email) == true)
                     {
                         e.SetAuthentication(user, 0);
                     }
@@ -62,7 +63,7 @@ namespace Cave.Web.Auth
         /// <param name="server">The server.</param>
         public AuthInterface(WebServer server)
         {
-            server.CheckSession += this.CheckAuth;
+            server.CheckSession += CheckAuth;
             if (server.AuthTables == null)
             {
                 throw new WebServerException(WebError.InternalServerError, "Server.AuthTables need to be set!");
@@ -97,7 +98,7 @@ namespace Cave.Web.Auth
 
         /// <summary>Retrieves the users session data.</summary>
         /// <param name="data">The web data.</param>
-        /// <remarks>Returns <see cref="UserSession"/> and if the session is authorized <see cref="User"/>, <see cref="EmailAddress"/></remarks>
+        /// <remarks>Returns <see cref="UserSession"/> and if the session is authorized <see cref="User"/>, <see cref="EmailAddress"/>.</remarks>
         [WebPage(Paths = "/auth/session")]
         public void GetSession(WebData data)
         {
@@ -111,14 +112,15 @@ namespace Cave.Web.Auth
         }
 
         #region /auth/admin/...
+
         /// <summary>Lists all users.</summary>
         /// <param name="data">The web data.</param>
-        /// <remarks>Returns <see cref="User"/>, <see cref="EmailAddress"/></remarks>
+        /// <remarks>Returns <see cref="User"/>, <see cref="EmailAddress"/>.</remarks>
         [WebPage(Paths = "/auth/admin/list/users", AuthType = WebServerAuthType.Session, AuthData = "Admin")]
         public void GetUserList(WebData data)
         {
             data.Result.AddMessage(data.Method, "Userlist retrieved.");
-            var users = data.Server.AuthTables.Users.GetStructs();
+            IList<User> users = data.Server.AuthTables.Users.GetStructs();
             data.Result.AddStructs(users.Select(u => u.ClearPrivateFields()));
             data.Result.AddTable(data.Server.AuthTables.EmailAddresses);
         }
@@ -126,8 +128,8 @@ namespace Cave.Web.Auth
         /// <summary>Deletes the user with the specified identifier.</summary>
         /// <param name="data">The data.</param>
         /// <param name="userID">The user identifier.</param>
-        /// <exception cref="WebServerException">User does not exist!</exception>
-        /// <remarks>Returns <see cref="User"/>, <see cref="EmailAddress"/></remarks>
+        /// <exception cref="WebServerException">User does not exist!.</exception>
+        /// <remarks>Returns <see cref="User"/>, <see cref="EmailAddress"/>.</remarks>
         [WebPage(Paths = "/auth/admin/user/delete", AuthType = WebServerAuthType.Session, AuthData = "Admin")]
         public void DeleteUser(WebData data, long userID)
         {
@@ -154,12 +156,12 @@ namespace Cave.Web.Auth
         /// <param name="userID">The user identifier.</param>
         /// <param name="nickName">Name of the nick.</param>
         /// <param name="userLevel">The new user level.</param>
-        /// <param name="invalidateOTP">A flag telling whether to invalidate the one time password id of the user. This cannot be used without setting a new password!</param>
+        /// <param name="invalidateOTP">A flag telling whether to invalidate the one time password id of the user. This cannot be used without setting a new password!.</param>
         /// <param name="password">A new password for the user.</param>
         /// <exception cref="WebServerException">User does not exist!
         /// or
         /// NickName is already registered.</exception>
-        /// <remarks>Returns <see cref="User" />, <see cref="EmailAddress" /></remarks>
+        /// <remarks>Returns <see cref="User" />, <see cref="EmailAddress" />.</remarks>
         [WebPage(Paths = "/auth/admin/user/modify", AuthType = WebServerAuthType.Session, AuthData = "Admin")]
         public void ModifyUser(WebData data, long userID, string nickName = null, int? userLevel = null, bool? invalidateOTP = null, string password = null)
         {
@@ -186,7 +188,7 @@ namespace Cave.Web.Auth
 
                 if (password != null)
                 {
-                    if (true == invalidateOTP)
+                    if (invalidateOTP == true)
                     {
                         user.SetRandomSalt();
                     }
@@ -203,24 +205,25 @@ namespace Cave.Web.Auth
         /// <summary>Gets the user details. This requires an authenticated session.</summary>
         /// <param name="data">The data.</param>
         /// <param name="userID">The user identifier.</param>
-        /// <exception cref="WebServerException"><see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!</exception>
+        /// <exception cref="WebServerException"><see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.</exception>
         /// <remarks>
         /// Returns <see cref="WebMessage" /> (Result), <see cref="User" /> (User),
         /// <see cref="License" /> (Licenses), <see cref="Address" /> (Addresses), <see cref="PhoneNumber" /> (PhoneNumbers),
         /// <see cref="EmailAddress" /> (EmailAddresses), <see cref="Group" /> (Groups: the user owns or may access)
-        /// <see cref="GroupMember" /> (GroupMembers), <see cref="UserSessionLicense" /> (ActiveSessions), <see cref="User" /> (ActiveUsers of shared licenses)
+        /// <see cref="GroupMember" /> (GroupMembers), <see cref="UserSessionLicense" /> (ActiveSessions), <see cref="User" /> (ActiveUsers of shared licenses).
         /// </remarks>
         [WebPage(Paths = "/auth/admin/account/details", AuthType = WebServerAuthType.Session, AuthData = "Admin")]
         public void GetAccountDetailsByUser(WebData data, long userID)
         {
             AuthTables authTables = data.Server.AuthTables;
             User user = authTables.Users.GetStruct(userID);
-            authTables.UserDetails.TryGetStruct(user.ID, out UserDetail userDetail); userDetail.UserID = user.ID;
-            var groupMember = authTables.GroupMembers.GetStructs(nameof(GroupMember.UserID), user.ID);
-            var groups = authTables.Groups.GetStructs(groupMember.Select(m => m.GroupID).ToArray());
+            authTables.UserDetails.TryGetStruct(user.ID, out UserDetail userDetail);
+            userDetail.UserID = user.ID;
+            IList<GroupMember> groupMember = authTables.GroupMembers.GetStructs(nameof(GroupMember.UserID), user.ID);
+            IList<Group> groups = authTables.Groups.GetStructs(groupMember.Select(m => m.GroupID).ToArray());
 
-            //get licenses and transfer without certificate data
-            List<License> licenses = new List<License>();
+            // get licenses and transfer without certificate data
+            var licenses = new List<License>();
             licenses.AddRange(authTables.GetGroupLicenses(groups.Select(g => g.ID)));
             licenses.AddRange(authTables.GetUserLicenses(user.ID));
             for (int i = 0; i < licenses.Count; i++)
@@ -230,11 +233,11 @@ namespace Cave.Web.Auth
                 licenses[i] = l;
             }
 
-            var phoneNumbers = authTables.PhoneNumbers.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            var emailAddresses = authTables.EmailAddresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            var addresses = authTables.Addresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            var userSessionLicenses = authTables.UserSessionLicenses.GetStructs(Search.FieldIn(nameof(UserSessionLicense.LicenseID), licenses.Select(l => l.ID)));
-            var activeUsers = authTables.Users.GetStructs(userSessionLicenses.Select(usl => usl.UserID).Distinct());
+            IList<PhoneNumber> phoneNumbers = authTables.PhoneNumbers.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            IList<EmailAddress> emailAddresses = authTables.EmailAddresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            IList<Address> addresses = authTables.Addresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            IList<UserSessionLicense> userSessionLicenses = authTables.UserSessionLicenses.GetStructs(Search.FieldIn(nameof(UserSessionLicense.LicenseID), licenses.Select(l => l.ID)));
+            IList<User> activeUsers = authTables.Users.GetStructs(userSessionLicenses.Select(usl => usl.UserID).Distinct());
 
             user.ClearPrivateFields();
             data.Result.AddMessage(data.Method, "User details retrieved");
@@ -256,7 +259,7 @@ namespace Cave.Web.Auth
 
         /// <summary>Lists all user levels.</summary>
         /// <param name="data">The data.</param>
-        /// <remarks>Returns <see cref="UserLevel"/></remarks>
+        /// <remarks>Returns <see cref="UserLevel"/>.</remarks>
         [WebPage(Paths = "/auth/list/levels")]
         public void GetLevelList(WebData data)
         {
@@ -265,7 +268,7 @@ namespace Cave.Web.Auth
         }
 
         /// <summary>
-        /// Retrieves all available country datasets
+        /// Retrieves all available country datasets.
         /// </summary>
         /// <param name="data">The data.</param>
         /// <remarks>Returns <see cref="Country"/>.</remarks>
@@ -297,18 +300,20 @@ namespace Cave.Web.Auth
         /// or
         /// <see cref="WebError.InvalidParameters" /> Missing firstname/lastname!
         /// or
-        /// <see cref="WebError.InvalidParameters" /> Invalid email address!</exception>
-        /// <remarks>Returns <see cref="WebMessage" />, <see cref="User"/>, <see cref="EmailAddress"/>, <see cref="UserDetail"/>, <see cref="NewPasswordNotification"/></remarks>
+        /// <see cref="WebError.InvalidParameters" /> Invalid email address!.</exception>
+        /// <remarks>Returns <see cref="WebMessage" />, <see cref="User"/>, <see cref="EmailAddress"/>, <see cref="UserDetail"/>, <see cref="NewPasswordNotification"/>.</remarks>
         [WebPage(Paths = "/auth/account/create")]
         public void CreateAccount(WebData data, string nickname, string email = null, string firstname = null, string lastname = null, DateTime? birthday = null, Gender gender = 0, string password = null)
         {
-            AuthTables authTables = data.Server.AuthTables; User user; EmailAddress emailAddress;
+            AuthTables authTables = data.Server.AuthTables;
+            User user;
+            EmailAddress emailAddress;
             if (nickname == null)
             {
                 throw new ArgumentNullException(nameof(nickname));
             }
 
-            if (birthday.HasValue && birthday < DateTime.UtcNow - TimeSpan.FromDays(365 * 120) || birthday > DateTime.UtcNow - TimeSpan.FromDays(12 * 365))
+            if ((birthday.HasValue && birthday < DateTime.UtcNow - TimeSpan.FromDays(365 * 120)) || birthday > DateTime.UtcNow - TimeSpan.FromDays(12 * 365))
             {
                 throw new WebServerException(WebError.InvalidParameters, "Birthday not in valid range!");
             }
@@ -319,7 +324,7 @@ namespace Cave.Web.Auth
                     string host = new MailAddress(email).Host;
                     switch (host)
                     {
-                        case "cavemail.de": //TODO use collection to check for domains
+                        case "cavemail.de": // TODO use collection to check for domains
                         case "cavemail.org":
                         case "cavesystems.de":
                         case "cave.cloud": break;
@@ -379,14 +384,14 @@ namespace Cave.Web.Auth
                         OTPLink = TimeBasedOTP.GetGoogleQRLink(otpSecret),
                     });
                 }
-                UserDetail userDetails = new UserDetail()
+                var userDetails = new UserDetail()
                 {
                     Birthday = birthday.GetValueOrDefault(),
                     Gender = gender,
                     FirstName = firstname,
                     LastName = lastname,
                     PhonePIN = (int)(DefaultRNG.UInt32 % 100000),
-                    UserID = user.ID
+                    UserID = user.ID,
                 };
                 authTables.UserDetails.Replace(userDetails);
                 data.Result.AddStruct(user.ClearPrivateFields());
@@ -403,14 +408,14 @@ namespace Cave.Web.Auth
         /// <exception cref="WebServerException">
         /// <see cref="WebError.InvalidParameters"/> Invalid email address!
         /// or
-        /// <see cref="WebError.InvalidParameters"/> Verification error for email {0}!
+        /// <see cref="WebError.InvalidParameters"/> Verification error for email {0}!.
         /// </exception>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="NewPasswordNotification"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="NewPasswordNotification"/>.</remarks>
         [WebPage(Paths = "/auth/account/verify")]
         public void VerifyAccount(WebData data, string email, string code)
         {
             AuthTables authTables = data.Server.AuthTables;
-            var addresses = authTables.EmailAddresses.GetStructs(nameof(EmailAddress.Address), email);
+            IList<EmailAddress> addresses = authTables.EmailAddresses.GetStructs(nameof(EmailAddress.Address), email);
             if (addresses.Count > 1)
             {
                 throw new WebServerException(WebError.InvalidParameters, 0, string.Format("Email address {0} not unique, please contact support!", email));
@@ -449,17 +454,19 @@ namespace Cave.Web.Auth
         }
 
         /// <summary>Requests a new password for an existing user.</summary>
-        /// <remarks>Returns <see cref="WebMessage"/> (Result)</remarks>
+        /// <remarks>Returns <see cref="WebMessage"/> (Result).</remarks>
         /// <param name="data">The data.</param>
         /// <param name="email">The email.</param>
         /// <exception cref="WebServerException">
         /// <see cref="WebError.InvalidParameters"/> We could not send an email to {email}.
         /// </exception>
-        /// <remarks>Returns <see cref="WebMessage"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>.</remarks>
         [WebPage(Paths = "/auth/account/request-new-password")]
         public void RequestNewPassword(WebData data, string email)
         {
-            AuthTables authTables = data.Server.AuthTables; User u; EmailAddress e;
+            AuthTables authTables = data.Server.AuthTables;
+            User u;
+            EmailAddress e;
             try
             {
                 authTables.RequestPasswordReset(email, out e, out u);
@@ -480,9 +487,9 @@ namespace Cave.Web.Auth
         /// <summary>Closes a user session.</summary>
         /// <param name="data">The data.</param>
         /// <exception cref="WebServerException">
-        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!
+        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.
         /// </exception>
-        /// <remarks>Returns <see cref="WebMessage"/> (Result)</remarks>
+        /// <remarks>Returns <see cref="WebMessage"/> (Result).</remarks>
         [WebPage(Paths = "/auth/account/logout")]
         public void Logout(WebData data)
         {
@@ -492,11 +499,11 @@ namespace Cave.Web.Auth
 
         /// <summary>Openes a user session.</summary>
         /// <param name="data">The data.</param>
-        /// <param name="redirect">The redirection target on success</param>
+        /// <param name="redirect">The redirection target on success.</param>
         /// <exception cref="WebServerException">
-        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!
+        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.
         /// </exception>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="EmailAddress"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="EmailAddress"/>.</remarks>
         [WebPage(Paths = "/auth/account/login", AuthType = WebServerAuthType.Basic)]
         public void Login(WebData data, string redirect = null)
         {
@@ -514,7 +521,7 @@ namespace Cave.Web.Auth
         /// <summary>Sets the nickname for the account.</summary>
         /// <param name="data">The data.</param>
         /// <param name="nickName">New nickname.</param>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>.</remarks>
         [WebPage(Paths = "/auth/account/nickname/update", AuthType = WebServerAuthType.Session)]
         public void UpdateNickname(WebData data, string nickName)
         {
@@ -541,7 +548,7 @@ namespace Cave.Web.Auth
         /// <param name="data">The data.</param>
         /// <param name="oldPassword">The old password.</param>
         /// <param name="newPassword">The new password.</param>
-        /// <remarks>Returns <see cref="WebMessage" />, <see cref="User" /></remarks>
+        /// <remarks>Returns <see cref="WebMessage" />, <see cref="User" />.</remarks>
         [WebPage(Paths = "/auth/account/password/update", AuthType = WebServerAuthType.Session)]
         public void UpdatePassword(WebData data, string oldPassword, string newPassword)
         {
@@ -557,7 +564,7 @@ namespace Cave.Web.Auth
         /// <summary>Creates a new avatar for the user.</summary>
         /// <param name="data">The data.</param>
         /// <param name="avatarID">The avatar identifier.</param>
-        /// <remarks>Returns <see cref="WebMessage" />, <see cref="User" /></remarks>
+        /// <remarks>Returns <see cref="WebMessage" />, <see cref="User" />.</remarks>
         [WebPage(Paths = "/auth/account/avatar/new", AuthType = WebServerAuthType.Session)]
         public void NewAvatar(WebData data, long avatarID = 0)
         {
@@ -590,7 +597,7 @@ namespace Cave.Web.Auth
 
         /// <summary>Creates a new color for the user.</summary>
         /// <param name="data">The data.</param>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>.</remarks>
         [WebPage(Paths = "/auth/account/color/new", AuthType = WebServerAuthType.Session)]
         public void NewColor(WebData data)
         {
@@ -614,6 +621,7 @@ namespace Cave.Web.Auth
         #endregion
 
         #region /auth/account/config/...
+
         /// <summary>Sets/gets a configurations for the current user and specified progam identifier.
         /// DELETE removes, PUT and POST replaces and GET retrieves the current configuration.</summary>
         /// <param name="data">The data.</param>
@@ -621,9 +629,9 @@ namespace Cave.Web.Auth
         /// <exception cref="WebServerException">
         /// <see cref="WebError.InvalidParameters" />ConfigurationSet requires a post request!
         /// or
-        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!
+        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.
         /// </exception>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="UserConfiguration"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="UserConfiguration"/>.</remarks>
         [WebPage(Paths = "/auth/account/config", AuthType = WebServerAuthType.Session)]
         public void AccountConfiguration(WebData data, long programID)
         {
@@ -644,7 +652,7 @@ namespace Cave.Web.Auth
         /// <param name="data">The data.</param>
         /// <param name="programID">The program identifier.</param>
         /// <exception cref="WebServerException">
-        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!
+        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.
         /// </exception>
         /// <remarks>Returns <see cref="WebMessage"/>, <see cref="UserConfiguration"/>.</remarks>
         [WebPage(Paths = "/auth/account/config/set", AuthType = WebServerAuthType.Session)]
@@ -656,7 +664,7 @@ namespace Cave.Web.Auth
             {
                 throw new WebServerException(WebError.InvalidParameters, 0, "ConfigurationSet requires a post request!");
             }
-            var existing = authTables.UserConfigurations.FindRows(
+            IList<long> existing = authTables.UserConfigurations.FindRows(
                 Search.FieldEquals(nameof(UserConfiguration.UserID), user.ID) &
                 Search.FieldEquals(nameof(UserConfiguration.ProgramID), programID));
 
@@ -667,7 +675,7 @@ namespace Cave.Web.Auth
             }
             else
             {
-                UserConfiguration config = new UserConfiguration()
+                var config = new UserConfiguration()
                 {
                     ID = existing.FirstOrDefault(),
                     ProgramID = programID,
@@ -684,7 +692,7 @@ namespace Cave.Web.Auth
         /// <param name="data">The data.</param>
         /// <param name="programID">The program identifier.</param>
         /// <exception cref="WebServerException">
-        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!
+        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.
         /// </exception>
         /// <remarks>Returns <see cref="WebMessage"/>, <see cref="UserConfiguration"/>.</remarks>
         [WebPage(Paths = "/auth/account/config/get", AuthType = WebServerAuthType.Session)]
@@ -721,22 +729,23 @@ namespace Cave.Web.Auth
 
         /// <summary>Gets the user details. This requires an authenticated session.</summary>
         /// <param name="data">The data.</param>
-        /// <exception cref="WebServerException"><see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!</exception>
+        /// <exception cref="WebServerException"><see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.</exception>
         /// <remarks>Returns <see cref="WebMessage"/> (Result), <see cref="User"/> (User),
         /// <see cref="License"/> (Licenses), <see cref="Address"/> (Addresses), <see cref="PhoneNumber"/> (PhoneNumbers),
         /// <see cref="EmailAddress"/> (EmailAddresses), <see cref="Group"/> (Groups: the user owns or may access)
-        /// <see cref="GroupMember"/> (GroupMembers), <see cref="UserSessionLicense"/> (ActiveSessions), <see cref="User"/> (ActiveUsers of shared licenses)
+        /// <see cref="GroupMember"/> (GroupMembers), <see cref="UserSessionLicense"/> (ActiveSessions), <see cref="User"/> (ActiveUsers of shared licenses).
         /// </remarks>
         [WebPage(Paths = "/auth/account/details", AuthType = WebServerAuthType.Session)]
         public void GetAccountDetails(WebData data)
         {
             AuthTables authTables = data.Server.AuthTables;
             User user = data.Session.GetUser();
-            authTables.UserDetails.TryGetStruct(user.ID, out UserDetail userDetail); userDetail.UserID = user.ID;
-            var groupMember = authTables.GroupMembers.GetStructs(nameof(GroupMember.UserID), user.ID);
-            var groups = authTables.Groups.GetStructs(groupMember.Select(m => m.GroupID).ToArray());
+            authTables.UserDetails.TryGetStruct(user.ID, out UserDetail userDetail);
+            userDetail.UserID = user.ID;
+            IList<GroupMember> groupMember = authTables.GroupMembers.GetStructs(nameof(GroupMember.UserID), user.ID);
+            IList<Group> groups = authTables.Groups.GetStructs(groupMember.Select(m => m.GroupID).ToArray());
 
-            //get licenses and transfer without certificate data
+            // get licenses and transfer without certificate data
             var licenses = new List<License>();
             licenses.AddRange(authTables.GetGroupLicenses(groups.Select(g => g.ID)));
             licenses.AddRange(authTables.GetUserLicenses(user.ID));
@@ -747,11 +756,11 @@ namespace Cave.Web.Auth
                 licenses[i] = l;
             }
 
-            var phoneNumbers = authTables.PhoneNumbers.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            var emailAddresses = authTables.EmailAddresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            var addresses = authTables.Addresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
-            var userSessionLicenses = authTables.UserSessionLicenses.GetStructs(Search.FieldIn(nameof(UserSessionLicense.LicenseID), licenses.Select(l => l.ID)));
-            var activeUsers = authTables.Users.GetStructs(userSessionLicenses.Select(usl => usl.UserID).Distinct());
+            IList<PhoneNumber> phoneNumbers = authTables.PhoneNumbers.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            IList<EmailAddress> emailAddresses = authTables.EmailAddresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            IList<Address> addresses = authTables.Addresses.GetStructs(nameof(PhoneNumber.UserID), user.ID);
+            IList<UserSessionLicense> userSessionLicenses = authTables.UserSessionLicenses.GetStructs(Search.FieldIn(nameof(UserSessionLicense.LicenseID), licenses.Select(l => l.ID)));
+            IList<User> activeUsers = authTables.Users.GetStructs(userSessionLicenses.Select(usl => usl.UserID).Distinct());
 
             data.Result.AddMessage(data.Method, "User details retrieved");
             data.Result.AddStruct(user.ClearPrivateFields());
@@ -769,11 +778,12 @@ namespace Cave.Web.Auth
         #endregion
 
         #region /auth/account/address/...
+
         /// <summary>Set the primary address of an account.</summary>
         /// <param name="data">The data.</param>
         /// <param name="addressID">The address identifier.</param>
-        /// <exception cref="Cave.Web.WebServerException">Address does not exist or does not belong to the current user!</exception>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="Address"/></remarks>
+        /// <exception cref="WebServerException">Address does not exist or does not belong to the current user!.</exception>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="Address"/>.</remarks>
         [WebPage(Paths = "/auth/account/address/setprimary", AuthType = WebServerAuthType.Session)]
         public void SetPrimaryAddress(WebData data, long addressID)
         {
@@ -806,13 +816,13 @@ namespace Cave.Web.Auth
         /// <param name="data">The data.</param>
         /// <param name="countryID">The country identifier.</param>
         /// <param name="text">The text.</param>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="Address"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="Address"/>.</remarks>
         [WebPage(Paths = "/auth/account/address/add", AuthType = WebServerAuthType.Session)]
         public void AddAddress(WebData data, long countryID, string text)
         {
             AuthTables authTables = data.Server.AuthTables;
             User user = data.Session.GetUser();
-            Address address = new Address()
+            var address = new Address()
             {
                 CountryID = countryID,
                 UserID = user.ID,
@@ -829,12 +839,12 @@ namespace Cave.Web.Auth
         /// <summary>Removes an address.</summary>
         /// <param name="data">The data.</param>
         /// <param name="addressID">The address identifier.</param>
-        /// <exception cref="Cave.Web.WebServerException">
+        /// <exception cref="WebServerException">
         /// Address does not exist or does not belong to the current user!
         /// or
-        /// Cannot remove primary address!
+        /// Cannot remove primary address!.
         /// </exception>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="Address"/> (DeletedAddresses)</remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="Address"/> (DeletedAddresses).</remarks>
         [WebPage(Paths = "/auth/account/address/delete", AuthType = WebServerAuthType.Session)]
         public void DeleteAddress(WebData data, long addressID)
         {
@@ -862,12 +872,12 @@ namespace Cave.Web.Auth
         /// <summary>Sets a primary phone number.</summary>
         /// <param name="data">The data.</param>
         /// <param name="phoneNumberID">The phone number identifier.</param>
-        /// <exception cref="Cave.Web.WebServerException">
+        /// <exception cref="WebServerException">
         /// PhoneNumber does not exist or does not belong to the current user!
         /// or
-        /// Cannot set primary phone number without verification!
+        /// Cannot set primary phone number without verification!.
         /// </exception>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="PhoneNumber"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="PhoneNumber"/>.</remarks>
         [WebPage(Paths = "/auth/account/phonenumber/setprimary", AuthType = WebServerAuthType.Session)]
         public void SetPrimaryPhoneNumber(WebData data, long phoneNumberID)
         {
@@ -906,13 +916,13 @@ namespace Cave.Web.Auth
         /// <param name="countryID">The country identifier.</param>
         /// <param name="prefix">The prefix.</param>
         /// <param name="number">The number.</param>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="PhoneNumber"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="PhoneNumber"/>.</remarks>
         [WebPage(Paths = "/auth/account/phonenumber/add", AuthType = WebServerAuthType.Session)]
         public void AddPhoneNumber(WebData data, long countryID, int prefix, long number)
         {
             AuthTables authTables = data.Server.AuthTables;
             User user = data.Session.GetUser();
-            PhoneNumber phone = new PhoneNumber()
+            var phone = new PhoneNumber()
             {
                 UserID = user.ID,
                 Prefix = prefix,
@@ -920,7 +930,8 @@ namespace Cave.Web.Auth
                 CountryID = countryID,
                 IsPrimary = authTables.PhoneNumbers.Count(nameof(PhoneNumber.UserID), user.ID) == 0,
             };
-            //TODO verification
+
+            // TODO verification
             phone.ID = authTables.PhoneNumbers.Insert(phone);
             authTables.Save();
             data.Result.AddMessage(data.Method, "User phonenumber added");
@@ -931,12 +942,12 @@ namespace Cave.Web.Auth
         /// <summary>Removed a phone number.</summary>
         /// <param name="data">The data.</param>
         /// <param name="phoneNumberID">The phone number identifier.</param>
-        /// <exception cref="Cave.Web.WebServerException">
+        /// <exception cref="WebServerException">
         /// Address does not exist or does not belong to the current user!
         /// or
-        /// Cannot remove primary phone number!
+        /// Cannot remove primary phone number!.
         /// </exception>
-        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="PhoneNumber"/></remarks>
+        /// <remarks>Returns <see cref="WebMessage"/>, <see cref="User"/>, <see cref="PhoneNumber"/>.</remarks>
         [WebPage(Paths = "/auth/account/phonenumber/delete", AuthType = WebServerAuthType.Session)]
         public void DeletePhoneNumber(WebData data, long phoneNumberID)
         {
@@ -960,8 +971,9 @@ namespace Cave.Web.Auth
         #endregion
 
         #region /auth/account/group
+
         /// <summary>
-        /// Allows a user to create a group. 
+        /// Allows a user to create a group.
         /// The user creating the group is added to the group with administrator priviledges.
         /// This requires an authenticated session.
         /// </summary>
@@ -969,25 +981,25 @@ namespace Cave.Web.Auth
         /// <param name="groupName">Name of the group.</param>
         /// <exception cref="WebServerException"><see cref="WebError.InvalidOperation"/> User is already member of too many groups!
         /// or
-        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!</exception>
-        /// <remarks>Returns <see cref="WebMessage"/> (Result), <see cref="Group"/> (Group), <see cref="GroupMember"/> (GroupMember: own group member dataset)</remarks>
+        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.</exception>
+        /// <remarks>Returns <see cref="WebMessage"/> (Result), <see cref="Group"/> (Group), <see cref="GroupMember"/> (GroupMember: own group member dataset).</remarks>
         [WebPage(Paths = "/auth/account/group/create", AuthType = WebServerAuthType.Session)]
         public void CreateGroup(WebData data, string groupName)
         {
             AuthTables authTables = data.Server.AuthTables;
             User user = data.Session.GetUser();
-            if (20 < authTables.GroupMembers.Count(nameof(GroupMember.UserID), user.ID))
+            if (authTables.GroupMembers.Count(nameof(GroupMember.UserID), user.ID) > 20)
             {
                 throw new WebServerException(WebError.InvalidOperation, 0, "User is already member of too many groups!");
             }
-            Group group = new Group()
+            var group = new Group()
             {
                 Color = ARGB.Random.AsUInt32,
                 AvatarID = DefaultRNG.UInt32,
                 Name = groupName,
             };
             group.ID = authTables.Groups.Insert(group);
-            GroupMember member = new GroupMember()
+            var member = new GroupMember()
             {
                 GroupID = group.ID,
                 UserID = user.ID,
@@ -1000,7 +1012,7 @@ namespace Cave.Web.Auth
             data.Result.AddStruct(member);
         }
 
-        /// <summary>Invites another user to a group. 
+        /// <summary>Invites another user to a group.
         /// The user calling this function needs to have group administrator priviledges.
         /// This requires an authenticated session.
         /// </summary>
@@ -1012,8 +1024,8 @@ namespace Cave.Web.Auth
         /// or
         /// <see cref="WebError.InvalidParameters"/> Invalid group or User {0} is not an administrator of the group!
         /// or
-        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!</exception>
-        /// <remarks>Returns <see cref="WebMessage"/> (Result)</remarks>
+        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.</exception>
+        /// <remarks>Returns <see cref="WebMessage"/> (Result).</remarks>
         [WebPage(Paths = "/auth/account/group/invite", AuthType = WebServerAuthType.Session)]
         public void InviteIntoGroup(WebData data, long groupID, string email)
         {
@@ -1043,7 +1055,7 @@ namespace Cave.Web.Auth
                 {
                     throw new WebServerException(WebError.InvalidOperation, 0, "User was already invited or is part of the group!");
                 }
-                GroupMember newMember = new GroupMember()
+                var newMember = new GroupMember()
                 {
                     GroupID = group.ID,
                     UserID = emailAddress.UserID,
@@ -1067,9 +1079,9 @@ namespace Cave.Web.Auth
         /// <param name="data">The data.</param>
         /// <param name="groupID">The group identifier.</param>
         /// <exception cref="WebServerException">
-        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!
+        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.
         /// </exception>
-        /// <remarks>Returns <see cref="WebMessage"/> (Result)</remarks>
+        /// <remarks>Returns <see cref="WebMessage"/> (Result).</remarks>
         [WebPage(Paths = "/auth/account/group/join", AuthType = WebServerAuthType.Session)]
         public void JoinGroup(WebData data, long groupID)
         {
@@ -1092,14 +1104,14 @@ namespace Cave.Web.Auth
         /// <param name="groupID">The group identifier.</param>
         /// <exception cref="WebServerException"><see cref="WebError.InvalidParameters" /> Invalid group or User {0} is not a member of the group!
         /// or
-        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!</exception>
-        /// <remarks>Returns <see cref="WebMessage"/> (Result)</remarks>
+        /// <see cref="WebError.SessionRequired" /> Session Object {0} is not available at the session!.</exception>
+        /// <remarks>Returns <see cref="WebMessage"/> (Result).</remarks>
         [WebPage(Paths = "/auth/account/group/leave", AuthType = WebServerAuthType.Session)]
         public void LeaveGroup(WebData data, long groupID)
         {
             AuthTables authTables = data.Server.AuthTables;
             User user = data.Session.GetUser();
-            var members = authTables.GroupMembers.GetStructs(
+            IList<GroupMember> members = authTables.GroupMembers.GetStructs(
                 Search.FieldEquals(nameof(GroupMember.UserID), user.ID) &
                 Search.FieldEquals(nameof(GroupMember.GroupID), groupID));
             if (members.Count != 1)

@@ -5,7 +5,7 @@ using Cave.IO;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides an embedded web server result message
+    /// Provides an embedded web server result message.
     /// </summary>
     [Table("Messages")]
     public struct WebMessage
@@ -66,36 +66,36 @@ namespace Cave.Web
         /// <param name="message">The message.</param>
         /// <param name="error">The error.</param>
         /// <param name="code">The code.</param>
-        /// <returns>Returns a new web message</returns>
+        /// <returns>Returns a new web message.</returns>
         public static WebMessage Create(WebServerMethod method, string message, WebError error = WebError.None, HttpStatusCode code = 0)
         {
             return Create(method.Name.SplitCamelCase().Join(" "), message, error, code);
         }
 
-        /// <summary>The identifier</summary>
+        /// <summary>The identifier.</summary>
         [Field(Flags = FieldFlags.ID)]
         public long ID;
 
-        /// <summary>The code</summary>
+        /// <summary>The code.</summary>
         [Field]
         public WebError Error;
 
-        /// <summary>The code</summary>
+        /// <summary>The code.</summary>
         [Field]
         public HttpStatusCode Code;
 
-        /// <summary>The title</summary>
+        /// <summary>The title.</summary>
         [Field(AlternativeNames = "Title")]
         [StringFormat(StringEncoding.UTF8)]
         public string Source;
 
-        /// <summary>The message</summary>
+        /// <summary>The message.</summary>
         [Field(AlternativeNames = "Message")]
         [StringFormat(StringEncoding.UTF8)]
         public string Content;
 
-        /// <summary>Returns a <see cref="System.String" /> that represents this instance.</summary>
-        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
+        /// <summary>Returns a <see cref="string" /> that represents this instance.</summary>
+        /// <returns>A <see cref="string" /> that represents this instance.</returns>
         public override string ToString()
         {
             if (Error == WebError.None)
@@ -107,7 +107,6 @@ namespace Cave.Web
         }
 
         /// <summary>Throws an exception for this instance if <see cref="Error"/> != <see cref="WebError.None"/>.</summary>
-        /// <exception cref="WebServerException"></exception>
         public void Throw()
         {
             if (Error != WebError.None) { throw new WebServerException(this); }

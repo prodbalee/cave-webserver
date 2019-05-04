@@ -5,7 +5,7 @@ using Cave.Collections.Generic;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a part of a multi part content
+    /// Provides a part of a multi part content.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
     public class WebSinglePart
@@ -26,7 +26,7 @@ namespace Cave.Web
             {
                 if (ContentDisposition != null)
                 {
-                    OptionCollection options = OptionCollection.FromStrings(ContentDisposition.Split(';'), true);
+                    var options = OptionCollection.FromStrings(ContentDisposition.Split(';'), true);
                     if (options.Contains("filename"))
                     {
                         return options["filename"].Value;
@@ -44,7 +44,7 @@ namespace Cave.Web
             {
                 if (ContentDisposition != null)
                 {
-                    OptionCollection options = OptionCollection.FromStrings(ContentDisposition.Split(';'), true);
+                    var options = OptionCollection.FromStrings(ContentDisposition.Split(';'), true);
                     if (options.Contains("name"))
                     {
                         return options["name"].Value;
@@ -87,8 +87,8 @@ namespace Cave.Web
             }
         }
 
-        /// <summary>Returns a <see cref="System.String" /> that represents this instance.</summary>
-        /// <returns>A <see cref="System.String" /> that represents this instance.</returns>
+        /// <summary>Returns a <see cref="string" /> that represents this instance.</summary>
+        /// <returns>A <see cref="string" /> that represents this instance.</returns>
         public override string ToString()
         {
             if (Content == null)

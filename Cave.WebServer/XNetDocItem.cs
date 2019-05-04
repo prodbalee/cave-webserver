@@ -5,7 +5,7 @@ using System.Xml.Linq;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a .net documentation item
+    /// Provides a .net documentation item.
     /// </summary>
     public class XNetDocItem
     {
@@ -60,14 +60,14 @@ namespace Cave.Web
             Summary = GetString(element.Element("summary"));
             Remarks = GetString(element.Element("remarks"));
             Returns = GetString(element.Element("returns"));
-            Dictionary<string, string> parameters = new Dictionary<string, string>();
+            var parameters = new Dictionary<string, string>();
             foreach (XElement e in element.Elements("param"))
             {
                 string name = e.Attribute("name").Value;
                 parameters.Add(name, GetString(e));
             }
             Parameters = new ReadOnlyDictionary<string, string>(parameters);
-            List<string> exceptions = new List<string>();
+            var exceptions = new List<string>();
             foreach (XElement e in element.Elements("exception").Descendants())
             {
                 XNode node = e;

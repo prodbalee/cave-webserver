@@ -10,39 +10,39 @@ using Cave.Collections.Generic;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides web templates
+    /// Provides web templates.
     /// </summary>
     public class WebTemplate
     {
-        /// <summary>The tag to replace</summary>
+        /// <summary>The tag to replace.</summary>
         public static readonly byte[] Tag = ASCII.GetBytes("<!-- CaveJSON -->");
 
-        /// <summary>The script start data</summary>
+        /// <summary>The script start data.</summary>
         public static readonly byte[] ScriptStart = ASCII.GetBytes("<script type=\"application/javascript\">var CaveJSON=");
 
-        /// <summary>The script end data</summary>
+        /// <summary>The script end data.</summary>
         public static readonly byte[] ScriptEnd = ASCII.GetBytes("</script>");
 
         class Func
         {
-            public string Name;
-            public WebServerMethod Method;
             public readonly Dictionary<string, string> Parameters = new Dictionary<string, string>();
             public readonly Set<string> NeededParameters = new Set<string>();
             public WebTemplateParameter[] ParameterDescriptions;
+            public string Name;
+            public WebServerMethod Method;
         }
 
-        WebServer Server;
-        Func[] Functions;
-        WebContentFile[] Content;
-        byte[] StaticData;
+        readonly WebServer server;
+        Func[] functions;
+        WebContentFile[] content;
+        byte[] staticData;
 
         void Reload()
         {
-            //only one reload at a time
+            // only one reload at a time
             lock (this)
             {
-                { //multi thread reload check
+                { // multi thread reload check
                     DateTime lastChanged = FileSystem.GetLastWriteTimeUtc(FileName);
                     if (lastChanged == LastChanged)
                     {
@@ -52,8 +52,8 @@ namespace Cave.Web
 
                 Trace.TraceInformation("Reloading template {0}", FileName);
 
-                //read config
-                IniReader config = IniReader.FromFile(FileName);
+                // read config
+                var config = IniReader.FromFile(FileName);
                 {
                     LastChanged = FileSystem.GetLastWriteTimeUtc(FileName);
                     int v = config.ReadInt32("CaveWebTemplate", "Version");
@@ -63,25 +63,25 @@ namespace Cave.Web
                     }
                 }
 
-                //build function list
+                // build function list
                 {
-                    List<Func> functions = new List<Func>();
+                    var functions = new List<Func>();
                     foreach (string function in config.ReadSection("Functions", true))
                     {
-                        Func f = new Func
+                        var f = new Func
                         {
                             Name = function,
-                            Method = Server.FindMethod(function)
+                            Method = server.FindMethod(function),
                         };
                         if (f.Method == null)
                         {
                             throw new WebServerException(WebError.InternalServerError, 0, $"{FileName} invalid function call {function}!");
                         }
 
-                        List<WebTemplateParameter> list = new List<WebTemplateParameter>();
+                        var list = new List<WebTemplateParameter>();
                         foreach (string parameter in config.ReadSection(function, true))
                         {
-                            Option i = Option.Parse(parameter);
+                            var i = Option.Parse(parameter);
                             if (i.Name.StartsWith("?"))
                             {
                                 switch (i.Name)
@@ -113,13 +113,14 @@ namespace Cave.Web
                         f.ParameterDescriptions = list.ToArray();
                         functions.Add(f);
                     }
-                    Functions = functions.ToArray();
+                    this.functions = functions.ToArray();
                 }
 
-                //build content
+                // build content
                 {
-                    List<WebContentFile> content = new List<WebContentFile>();
-                    //main file is always first content file
+                    var content = new List<WebContentFile>();
+
+                    // main file is always first content file
                     string master = config.ReadSetting("CaveWebTemplate", "Master");
                     if (master == null)
                     {
@@ -129,20 +130,20 @@ namespace Cave.Web
                     string folder = Path.GetDirectoryName(FileName);
                     foreach (string contentFile in new string[] { master })
                     {
-                        content.Add(new WebContentFile(Server, folder, contentFile));
+                        content.Add(new WebContentFile(server, folder, contentFile));
                     }
                     foreach (string contentFile in config.ReadSection("Content", true))
                     {
-                        content.Add(new WebContentFile(Server, folder, contentFile));
+                        content.Add(new WebContentFile(server, folder, contentFile));
                     }
 
-                    if (Server.EnableStaticTemplates)
+                    if (server.EnableStaticTemplates)
                     {
-                        StaticData = BuildStaticData(content.ToArray());
+                        staticData = BuildStaticData(content.ToArray());
                     }
                     else
                     {
-                        Content = content.ToArray();
+                        this.content = content.ToArray();
                     }
                 }
             }
@@ -159,7 +160,7 @@ namespace Cave.Web
                 {
                     Trace.TraceInformation("Reloading content {0}", item.LastChanged);
                     string fileFolder = Path.GetDirectoryName(FileName);
-                    item = content[i] = new WebContentFile(Server, fileFolder, item.Url);
+                    item = content[i] = new WebContentFile(server, fileFolder, item.Url);
                 }
 
                 if (i == 0)
@@ -178,18 +179,8 @@ namespace Cave.Web
         /// <param name="fileName">Name of the file.</param>
         public WebTemplate(WebServer server, string fileName)
         {
-            if (server == null)
-            {
-                throw new ArgumentNullException(nameof(server));
-            }
-
-            if (fileName == null)
-            {
-                throw new ArgumentNullException(nameof(fileName));
-            }
-
-            Server = server;
-            FileName = fileName;
+            this.server = server ?? throw new ArgumentNullException(nameof(server));
+            FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
             Reload();
         }
 
@@ -207,55 +198,57 @@ namespace Cave.Web
 
         /// <summary>Builds the template.</summary>
         /// <param name="data">The data.</param>
-        /// <returns>Returns true on success, false otherwise</returns>
+        /// <returns>Returns true on success, false otherwise.</returns>
         public bool Render(WebData data)
         {
-            if (data.Server != Server)
+            if (data.Server != server)
             {
                 throw new ArgumentOutOfRangeException(nameof(data.Server));
             }
 
-            { //need reload ?
+            { // need reload ?
                 DateTime lastChanged = FileSystem.GetLastWriteTimeUtc(FileName);
                 if (lastChanged != LastChanged)
                 {
                     Reload();
                 }
             }
-            //do auth and load user session (if any)
+
+            // do auth and load user session (if any)
             data.Result.SkipMainObject = true;
             data.Result.TransmitLayout = false;
 
-            //call functions
-            var templateParameters = data.Request.Parameters;
+            // call functions
+            IDictionary<string, string> templateParameters = data.Request.Parameters;
             var tables = new Set<string>();
             var parameterDescription = new List<WebTemplateParameter>();
-            for (int i = 0; i < Functions.Length; i++)
+            for (int i = 0; i < functions.Length; i++)
             {
-                Func function = Functions[i];
+                Func function = functions[i];
                 parameterDescription.AddRange(function.ParameterDescriptions);
                 if (function.NeededParameters.Count > 0)
                 {
-                    //foreach neededparameters, any parameter is not at tmeplate parameters -> continue
+                    // foreach neededparameters, any parameter is not at tmeplate parameters -> continue
                     if (function.NeededParameters.Where(n => !templateParameters.ContainsKey(n)).Any())
                     {
                         continue;
                     }
                 }
-                Dictionary<string, string> functionParameters = new Dictionary<string, string>();
+                var functionParameters = new Dictionary<string, string>();
                 foreach (System.Reflection.ParameterInfo methodParameter in function.Method.Parameters)
                 {
-                    //lookup function parameter name from function section at template
+                    // lookup function parameter name from function section at template
                     if (!function.Parameters.TryGetValue(methodParameter.Name, out string templateParameterName))
                     {
                         continue;
                     }
-                    //parameter name at template could be loaded
+
+                    // parameter name at template could be loaded
                     if (!templateParameters.TryGetValue(templateParameterName, out string parameterValue))
                     {
                         if (!methodParameter.IsOptional)
                         {
-                            //no value given and is not optional
+                            // no value given and is not optional
                             throw new WebServerException(WebError.InvalidParameters, $"Template error: Missing {methodParameter.Name} is not for function {function} is not set. Define {templateParameterName} at template call!");
                         }
                         continue;
@@ -263,28 +256,31 @@ namespace Cave.Web
                     functionParameters[methodParameter.Name] = parameterValue;
                 }
                 data.Request.Parameters = new ReadOnlyDictionary<string, string>(functionParameters);
-                //invoke method
+
+                // invoke method
                 data.Method = function.Method;
                 data.Server.CallMethod(data);
             }
 
-            Stopwatch renderWatch = Server.PerformanceChecks ? Stopwatch.StartNew() : null;
-            //replace content
-            byte[] result = StaticData ?? BuildStaticData(Content);
+            Stopwatch renderWatch = server.PerformanceChecks ? Stopwatch.StartNew() : null;
+
+            // replace content
+            byte[] result = staticData ?? BuildStaticData(content);
 
             if (renderWatch != null)
             {
                 Trace.TraceInformation("Template static data generation took {0}", renderWatch.Elapsed.FormatTime());
             }
 
-            //render data 
+            // render data
             {
                 data.Result.Type = WebResultType.Json;
                 data.Result.AddStructs(parameterDescription);
                 WebAnswer answer = data.Result.ToAnswer();
                 result = result.ReplaceFirst(Tag, ScriptStart, answer.ContentData, ScriptEnd);
             }
-            //set result
+
+            // set result
             data.Result = null;
 
             WebMessage message;

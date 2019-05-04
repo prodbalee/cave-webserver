@@ -1,7 +1,7 @@
 ﻿namespace Cave.Web
 {
     /// <summary>
-    /// Provides embedded web server session modes
+    /// Provides embedded web server session modes.
     /// </summary>
     public enum WebServerSessionMode
     {

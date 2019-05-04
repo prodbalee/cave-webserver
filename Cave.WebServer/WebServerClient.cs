@@ -11,7 +11,7 @@ namespace Cave.Web
 {
     class WebServerClient : TcpAsyncClient, IWebClient
     {
-        internal volatile WebServer m_Server;
+        internal volatile WebServer WebServer;
 
         public WebServerClient()
         {
@@ -20,22 +20,24 @@ namespace Cave.Web
         protected override void OnConnect()
         {
             base.OnConnect();
-            Task.Factory.StartNew(delegate
+            Task.Factory.StartNew(() =>
             {
                 if (Stream == null)
                 {
                     return;
                 }
-                //perform ssl handshake
+
+                // perform ssl handshake
                 SslHandshake();
-                //handle client
-                m_Server.HandleClient(this);
+
+                // handle client
+                WebServer.HandleClient(this);
             }, TaskCreationOptions.LongRunning);
         }
 
         void SslHandshake()
         {
-            if (m_Server.Certificate == null)
+            if (WebServer.Certificate == null)
             {
                 Reader = new DataReader(Stream, newLineMode: NewLineMode.CRLF);
                 Writer = new DataWriter(Stream, newLineMode: NewLineMode.CRLF);
@@ -43,22 +45,22 @@ namespace Cave.Web
             }
             try
             {
-                SslStream sslStream = new SslStream(Stream);
-                sslStream.AuthenticateAsServer(m_Server.Certificate);
+                var sslStream = new SslStream(Stream);
+                sslStream.AuthenticateAsServer(WebServer.Certificate);
                 Reader = new DataReader(sslStream, newLineMode: NewLineMode.CRLF);
                 Writer = new DataWriter(sslStream, newLineMode: NewLineMode.CRLF);
-                if (m_Server.PerformanceChecks)
+                if (WebServer.PerformanceChecks)
                 {
                     Trace.TraceInformation("SslHandshake completed. Elapsed {0}.", StopWatch.Elapsed.FormatTime());
                 }
             }
             catch (Exception ex)
             {
-                if (m_Server.PerformanceChecks)
+                if (WebServer.PerformanceChecks)
                 {
                     Trace.TraceError("SslHandshake <red>error<default> {1}. Elapsed {0}.", StopWatch.Elapsed.FormatTime(), ex);
                 }
-                WebData data = new WebData(m_Server, StopWatch);
+                var data = new WebData(WebServer, StopWatch);
                 data.Result.AddMessage("SslHandshake", WebError.ClientError, $"Http connections are not supported!");
                 data.Result.Type = WebResultType.Html;
                 data.Result.CloseAfterAnswer = true;
@@ -80,7 +82,7 @@ namespace Cave.Web
             }
             else if (data.Result != null)
             {
-                //add all headers present at result to answer.
+                // add all headers present at result to answer.
                 foreach (System.Collections.Generic.KeyValuePair<string, string> header in data.Result.Headers)
                 {
                     if (!data.Answer.Headers.ContainsKey(header.Key))
@@ -97,11 +99,11 @@ namespace Cave.Web
             }
             if (data.Session != null)
             {
-                switch (m_Server.SessionMode)
+                switch (WebServer.SessionMode)
                 {
                     case WebServerSessionMode.Cookie:
                         data.Answer.Headers["Session"] = data.Session.ID.ToString();
-                        if (m_Server.SessionMode == WebServerSessionMode.Cookie)
+                        if (WebServer.SessionMode == WebServerSessionMode.Cookie)
                         {
                             data.Answer.Headers["Set-Cookie"] = $"Session={data.Session.ID}; Path=/; Max-Age=" + (int)data.Server.SessionTimeout.TotalSeconds;
                         }
@@ -130,7 +132,7 @@ namespace Cave.Web
             answer.Headers["Date"] = DateTime.Now.ToString("R");
             answer.Headers["Server"] = "CaveSystems WebServer";
             answer.Headers["Connection"] = answer.CloseAfterAnswer ? "close" : "persistent";
-            if (!m_Server.DisableCompression && (m_Server.ForceCompression || answer.AllowCompression) && (answer.ContentData.Length > 128))
+            if (!WebServer.DisableCompression && (WebServer.ForceCompression || answer.AllowCompression) && (answer.ContentData.Length > 128))
             {
                 byte[] packed = answer.ContentData.Gzip();
                 if (packed.Length < answer.ContentData.Length)
@@ -151,7 +153,7 @@ namespace Cave.Web
             Trace.TraceInformation("{0}. Elapsed <cyan>{1}<default>.", answer, StopWatch.Elapsed.FormatTime());
             if (answer.CloseAfterAnswer)
             {
-                var endTime = DateTime.UtcNow.AddSeconds(10);
+                DateTime endTime = DateTime.UtcNow.AddSeconds(10);
                 while (IsConnected && DateTime.UtcNow < endTime)
                 {
                     Thread.Sleep(1);

@@ -4,7 +4,7 @@ using System.Net;
 namespace Cave.Web
 {
     /// <summary>
-    /// embedded web server exception message
+    /// embedded web server exception message.
     /// </summary>
     /// <seealso cref="Exception" />
     public class WebServerException : Exception
@@ -24,7 +24,8 @@ namespace Cave.Web
         /// <summary>Initializes a new instance of the <see cref="WebServerException" /> class.</summary>
         /// <param name="error">The error.</param>
         /// <param name="message">The message.</param>
-        public WebServerException(WebError error, string message) : base(message)
+        public WebServerException(WebError error, string message)
+            : base(message)
         {
             Error = error;
         }
@@ -33,7 +34,8 @@ namespace Cave.Web
         /// <param name="error">The error.</param>
         /// <param name="message">The message.</param>
         /// <param name="args">The arguments.</param>
-        public WebServerException(WebError error, string message, params object[] args) : base(string.Format(message, args))
+        public WebServerException(WebError error, string message, params object[] args)
+            : base(string.Format(message, args))
         {
             Error = error;
         }
@@ -42,7 +44,8 @@ namespace Cave.Web
         /// <param name="error">The error.</param>
         /// <param name="code">The code.</param>
         /// <param name="message">The message.</param>
-        public WebServerException(WebError error, HttpStatusCode code, string message) : base(message)
+        public WebServerException(WebError error, HttpStatusCode code, string message)
+            : base(message)
         {
             Error = error;
             Code = code;
@@ -53,18 +56,8 @@ namespace Cave.Web
         /// <param name="code">The code.</param>
         /// <param name="message">The message.</param>
         /// <param name="args">The arguments.</param>
-        public WebServerException(WebError error, HttpStatusCode code, string message, params object[] args) : base(string.Format(message, args))
-        {
-            Error = error;
-            Code = code;
-        }
-
-        /// <summary>Initializes a new instance of the <see cref="WebServerException" /> class.</summary>
-        /// <param name="ex">The inner exception.</param>
-        /// <param name="error">The error.</param>
-        /// <param name="code">The code.</param>
-        /// <param name="message">The message.</param>
-        public WebServerException(Exception ex, WebError error, HttpStatusCode code, string message) : base(message, ex)
+        public WebServerException(WebError error, HttpStatusCode code, string message, params object[] args)
+            : base(string.Format(message, args))
         {
             Error = error;
             Code = code;
@@ -75,8 +68,21 @@ namespace Cave.Web
         /// <param name="error">The error.</param>
         /// <param name="code">The code.</param>
         /// <param name="message">The message.</param>
+        public WebServerException(Exception ex, WebError error, HttpStatusCode code, string message)
+            : base(message, ex)
+        {
+            Error = error;
+            Code = code;
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="WebServerException" /> class.</summary>
+        /// <param name="ex">The inner exception.</param>
+        /// <param name="error">The error.</param>
+        /// <param name="code">The code.</param>
+        /// <param name="message">The message.</param>
         /// <param name="args">The arguments.</param>
-        public WebServerException(Exception ex, WebError error, HttpStatusCode code, string message, params object[] args) : base(string.Format(message, args), ex)
+        public WebServerException(Exception ex, WebError error, HttpStatusCode code, string message, params object[] args)
+            : base(string.Format(message, args), ex)
         {
             Error = error;
             Code = code;
@@ -84,7 +90,8 @@ namespace Cave.Web
 
         /// <summary>Initializes a new instance of the <see cref="WebServerException"/> class.</summary>
         /// <param name="message">The message.</param>
-        public WebServerException(WebMessage message) : base(message.Content)
+        public WebServerException(WebMessage message)
+            : base(message.Content)
         {
             Error = message.Error;
             Code = message.Code;

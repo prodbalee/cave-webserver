@@ -22,10 +22,10 @@ namespace Cave.Web
                 throw new WebServerException(WebError.InternalServerError, 0, $"Content file {fileName} is not relative to static folder path!");
             }
             Trace.TraceInformation("Reloading content <cyan>{0}", url);
-            this.Url = url;
-            this.FileName = fileName;
+            Url = url;
+            FileName = fileName;
             LastChanged = FileSystem.GetLastWriteTimeUtc(fileName);
-            this.Content = File.ReadAllBytes(fileName);
+            Content = File.ReadAllBytes(fileName);
         }
 
         internal string FileName { get; }

@@ -11,7 +11,7 @@ using Cave.IO;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a received rest request
+    /// Provides a received rest request.
     /// </summary>
     public class WebRequest
     {
@@ -20,16 +20,16 @@ namespace Cave.Web
         /// <param name="firstLine">The first line.</param>
         /// <param name="client">The client.</param>
         /// <returns></returns>
-        /// <exception cref="Cave.Web.WebServerException">
+        /// <exception cref="WebServerException">
         /// Malformed request {0}!
         /// or
         /// Command {0} is not supported!
         /// or
-        /// Protocol {0} is not supported!
+        /// Protocol {0} is not supported!.
         /// </exception>
         internal static WebRequest Load(WebServer server, string firstLine, WebServerClient client)
         {
-            WebRequest req = new WebRequest(server)
+            var req = new WebRequest(server)
             {
                 SourceAddress = client.RemoteEndPoint.Address.ToString(),
                 LocalPort = client.LocalEndPoint.Port,
@@ -63,7 +63,7 @@ namespace Cave.Web
                 case "HTTP/1.1": break;
                 default: throw new WebServerException(WebError.InvalidOperation, "Protocol {0} is not supported!", parts[2]);
             }
-            Dictionary<string, string> headers = new Dictionary<string, string>();
+            var headers = new Dictionary<string, string>();
             while (true)
             {
                 string line = client.Reader.ReadLine();
@@ -107,7 +107,8 @@ namespace Cave.Web
                     int.TryParse(sizeStr, out size);
                 }
             }
-            //if (size > 20 * 1024 * 1024) throw new CaveWebException(CaveWebError.MaximumSizeExceeded, "Maximum transfer size exceeded!");
+
+            // if (size > 20 * 1024 * 1024) throw new CaveWebException(CaveWebError.MaximumSizeExceeded, "Maximum transfer size exceeded!");
             if (Headers.ContainsKey("expect"))
             {
                 if (Headers["expect"].Contains("100-continue"))
@@ -128,7 +129,7 @@ namespace Cave.Web
                 switch (transferEncoding.ToLower().Trim())
                 {
                     case "chunked":
-                        FifoBuffer buf = new FifoBuffer();
+                        var buf = new FifoBuffer();
                         while (true)
                         {
                             string line = client.Reader.ReadLine();
@@ -195,8 +196,7 @@ namespace Cave.Web
         /// <summary>Decodes the specified URL.</summary>
         /// <param name="url">The URL.</param>
         /// <param name="isPostData">if set to <c>true</c> [is post data].</param>
-        /// <exception cref="System.Exception">Path already set!</exception>
-        /// <exception cref="InvalidDataException"></exception>
+        /// <exception cref="Exception">Path already set!.</exception>
         public void DecodeUrl(string url, bool isPostData = false)
         {
             string para;
@@ -211,8 +211,8 @@ namespace Cave.Web
                 para = url;
             }
             else
-            //decode url
             {
+                // decode url
                 PlainUrl = url;
                 string[] parts = url.Split(new char[] { '?' }, 2);
                 if (DecodedUrl != null)
@@ -234,8 +234,9 @@ namespace Cave.Web
 
                 DecodedUrl = DecodedUrl.TrimEnd('/');
             }
-            //get new parameter values
-            Dictionary<string, string> parameters = new Dictionary<string, string>();
+
+            // get new parameter values
+            var parameters = new Dictionary<string, string>();
             if (para != null)
             {
                 foreach (string param in para.Split('&'))
@@ -256,7 +257,8 @@ namespace Cave.Web
                     }
                 }
             }
-            //need to load old parameter values ?
+
+            // need to load old parameter values ?
             if (Parameters != null)
             {
                 foreach (KeyValuePair<string, string> p in Parameters)
@@ -267,16 +269,17 @@ namespace Cave.Web
                     }
                 }
             }
-            //set parameters
+
+            // set parameters
             Parameters = new ReadOnlyDictionary<string, string>(parameters);
         }
 
         /// <summary>Sets the post data.</summary>
         /// <param name="data">The data.</param>
-        /// <exception cref="System.Exception">
+        /// <exception cref="Exception">
         /// Request is not a post request!
         /// or
-        /// PostData was already set!
+        /// PostData was already set!.
         /// </exception>
         public void SetPostData(byte[] data)
         {
@@ -297,7 +300,7 @@ namespace Cave.Web
         /// <summary>Decodes the form data.</summary>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="reader">The reader.</param>
-        /// <exception cref="Cave.Web.WebServerException">0 - MultiPart boundary missing!</exception>
+        /// <exception cref="WebServerException">0 - MultiPart boundary missing!.</exception>
         public void DecodeMultiPartFormData(string contentType, DataReader reader)
         {
             string boundary = contentType.AfterFirst("boundary").AfterFirst('"').BeforeFirst('"');
@@ -308,7 +311,7 @@ namespace Cave.Web
             MultiPartFormData = WebMultiPart.Parse(reader, boundary.Trim());
         }
 
-        /// <summary>The server</summary>
+        /// <summary>Gets the server.</summary>
         public WebServer Server { get; }
 
         /// <summary>Gets the source address (without port).</summary>
@@ -438,7 +441,7 @@ namespace Cave.Web
 
         /// <summary>Gets a value indicating whether [allow compression].</summary>
         /// <value><c>true</c> if [allow compression]; otherwise, <c>false</c>.</value>
-        public bool AllowCompression => (Headers.TryGetValue("accept-encoding", out string compression) && compression.ToLower().Contains("gzip"));
+        public bool AllowCompression => Headers.TryGetValue("accept-encoding", out string compression) && compression.ToLower().Contains("gzip");
 
         /// <summary>Saves the request to the specified filename (for debugging).</summary>
         /// <param name="filename">The filename.</param>
@@ -446,7 +449,7 @@ namespace Cave.Web
         {
             using (Stream stream = File.Create(filename))
             {
-                DataWriter writer = new DataWriter(stream, newLineMode: NewLineMode.CRLF);
+                var writer = new DataWriter(stream, newLineMode: NewLineMode.CRLF);
                 writer.WriteLine(FirstLine);
                 foreach (KeyValuePair<string, string> head in Headers)
                 {

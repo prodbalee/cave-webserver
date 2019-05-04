@@ -1,7 +1,7 @@
 namespace Cave.IO
 {
     /// <summary>
-    /// Provides available JavaScript Object Notation node types
+    /// Provides available JavaScript Object Notation node types.
     /// </summary>
     public enum JsonNodeType
     {

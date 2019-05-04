@@ -3,9 +3,9 @@
 namespace Cave.Web
 {
     /// <summary>
-    /// Cave web page call
+    /// Cave web page call.
     /// </summary>
-    /// <seealso cref="System.EventArgs" />
+    /// <seealso cref="EventArgs" />
     public class WebPageEventArgs : EventArgs
     {
         bool handled;

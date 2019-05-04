@@ -1,7 +1,7 @@
 ﻿namespace Cave.Web
 {
     /// <summary>
-    /// Provides all possible error codes
+    /// Provides all possible error codes.
     /// </summary>
     public enum WebError
     {

@@ -3,14 +3,14 @@
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a link and text
+    /// Provides a link and text.
     /// </summary>
     public struct WebLink
     {
-        /// <summary>The link</summary>
+        /// <summary>The link.</summary>
         public string Link;
 
-        /// <summary>The text</summary>
+        /// <summary>The text.</summary>
         public string Text;
 
         /// <summary>Returns a <see cref="string" /> that represents this instance.</summary>

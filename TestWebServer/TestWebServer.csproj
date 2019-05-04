@@ -163,10 +163,10 @@
       <Version>1.0.5</Version>
     </PackageReference>
     <PackageReference Include="Cave.Media">
-      <Version>1.0.5</Version>
+      <Version>1.0.6</Version>
     </PackageReference>
     <PackageReference Include="Cave.Net">
-      <Version>1.0.7</Version>
+      <Version>1.0.8</Version>
     </PackageReference>
     <PackageReference Include="Cave.Settings">
       <Version>1.0.3</Version>

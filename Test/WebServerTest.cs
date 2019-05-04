@@ -181,7 +181,7 @@ namespace Test
         {
             HttpWebRequest request = System.Net.WebRequest.CreateHttp("http://localhost:8080");
             request.UserAgent = "TestWebServer_Client";
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var response = (HttpWebResponse)request.GetResponse();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             response.Close();
         }
@@ -189,7 +189,7 @@ namespace Test
         [Test]
         public void GetTestPageXML()
         {
-            XmlRequest request = XmlRequest.Prepare("http://localhost:8080", "testpage");
+            var request = XmlRequest.Prepare("http://localhost:8080", "testpage");
             WebMessage message = request.Get();
             Assert.AreEqual(HttpStatusCode.OK, message.Code);
             Assert.AreEqual("Test Page success", message.Content);
@@ -198,7 +198,7 @@ namespace Test
         [Test]
         public void GetEchoXML()
         {
-            XmlRequest request = XmlRequest.Prepare("http://localhost:8080", "testecho", "value=teststring");
+            var request = XmlRequest.Prepare("http://localhost:8080", "testecho", "value=teststring");
             WebMessage message = request.Get();
             Assert.AreEqual(HttpStatusCode.OK, message.Code);
             Assert.AreEqual("value", message.Source);
@@ -208,10 +208,10 @@ namespace Test
         [Test]
         public void GetTestStructMinXML()
         {
-            XmlRequest request = XmlRequest.Prepare("http://localhost:8080", "testdata", "structtype=min");
+            var request = XmlRequest.Prepare("http://localhost:8080", "testdata", "structtype=min");
             WebMessage message = request.Get();
             Assert.AreEqual(HttpStatusCode.OK, message.Code);
-            var dataTable = request.Result.GetTable<TestData>();
+            ITable<TestData> dataTable = request.Result.GetTable<TestData>();
             Assert.AreEqual(1, dataTable.RowCount);
             TestData data = dataTable.GetStruct(dataTable.IDs[0]);
             TestData mindata = TestDataMin();
@@ -221,10 +221,10 @@ namespace Test
         [Test]
         public void GetTestStructMaxXML()
         {
-            XmlRequest request = XmlRequest.Prepare("http://localhost:8080", "testdata", "structtype=max");
+            var request = XmlRequest.Prepare("http://localhost:8080", "testdata", "structtype=max");
             WebMessage message = request.Get();
             Assert.AreEqual(HttpStatusCode.OK, message.Code);
-            var dataTable = request.Result.GetTable<TestData>();
+            ITable<TestData> dataTable = request.Result.GetTable<TestData>();
             Assert.AreEqual(1, dataTable.RowCount);
             TestData data = dataTable.GetStruct(dataTable.IDs[0]);
             TestData mindata = TestDataMax();
@@ -236,7 +236,7 @@ namespace Test
         {
             HttpWebRequest request = System.Net.WebRequest.CreateHttp("http://localhost:8080/auth/session");
             request.UserAgent = "TestWebServer_Client";
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var response = (HttpWebResponse)request.GetResponse();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             response.Close();
         }
@@ -244,7 +244,7 @@ namespace Test
         [Test]
         public void GetSessionXML()
         {
-            XmlRequest request = XmlRequest.Prepare("http://localhost:8080", "auth/session");
+            var request = XmlRequest.Prepare("http://localhost:8080", "auth/session");
             WebMessage message = request.Get();
             Assert.AreEqual(HttpStatusCode.OK, message.Code);
         }
@@ -256,7 +256,7 @@ namespace Test
             HttpWebRequest request = System.Net.WebRequest.CreateHttp("http://localhost:8080/basicauth");
             request.UserAgent = "TestWebServer_Client";
             request.Headers.Add("Authorization", authdata);
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var response = (HttpWebResponse)request.GetResponse();
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             response.Close();
         }

@@ -13,7 +13,7 @@ using Cave.Data;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a soap method
+    /// Provides a soap method.
     /// </summary>
     public class WebServerMethod
     {
@@ -32,34 +32,33 @@ namespace Cave.Web
             return null;
         }
 
-        object Instance;
+        object instance;
 
         /// <summary>Gets a value indicating whether this instance is an action.</summary>
         /// <value><c>true</c> if this instance is an action; otherwise, <c>false</c>.</value>
-        public bool IsAction => Instance is Action<WebData>;
+        public bool IsAction => instance is Action<WebData>;
 
         /// <summary>Gets the fullpath.</summary>
         /// <value>The fullpath.</value>
         public IEnumerable<string> FullPaths { get; }
 
-        /// <summary>The method</summary>
+        /// <summary>Gets the method.</summary>
         public MethodInfo Method { get; }
 
-        /// <summary>The page attribute</summary>
+        /// <summary>Gets the page attribute.</summary>
         public WebPageAttribute PageAttribute { get; }
 
         /// <summary>Gets the name of the log source.</summary>
         /// <value>The name of the log source.</value>
-        public string LogSourceName => $"EmbeddedWebServerMethod {Instance.GetType().Name}.{Method.Name}";
+        public string LogSourceName => $"EmbeddedWebServerMethod {instance.GetType().Name}.{Method.Name}";
 
         /// <summary>Initializes a new instance of the <see cref="WebServerMethod" /> class.</summary>
         /// <param name="instance">The instance.</param>
         /// <param name="method">The method.</param>
         /// <param name="path">The path.</param>
-        /// <exception cref="Exception"></exception>
         public WebServerMethod(object instance, MethodInfo method, string path)
         {
-            Instance = instance;
+            this.instance = instance;
             Method = method;
             PageAttribute = GetPageAttribute(Method);
 
@@ -74,7 +73,7 @@ namespace Cave.Web
                 throw new InvalidDataException(string.Format("Method {0} needs exact one parameter of type {1}!", Method, nameof(WebData)));
             }
 
-            Set<string> fullPaths = new Set<string>();
+            var fullPaths = new Set<string>();
             foreach (string sub in PageAttribute.GetPaths())
             {
                 try { fullPaths.Add(FileSystem.Combine('/', path, sub)); }
@@ -126,15 +125,16 @@ namespace Cave.Web
 
         /// <summary>Invokes the method using the specified data.</summary>
         /// <param name="data">The data.</param>
-        /// <exception cref="Cave.Web.WebServerException">
+        /// <exception cref="WebServerException">
         /// Could not convert parameter {0} value {1} to type {2}
         /// or
-        /// Function {0}\nParameter {1} is missing!
+        /// Function {0}\nParameter {1} is missing!.
         /// </exception>
         public void Invoke(WebData data)
         {
             data.Server.OnCheckSession(data);
-            //auth required ?
+
+            // auth required ?
             if (PageAttribute.AuthType != WebServerAuthType.None)
             {
                 if (!data.Session.IsAuthenticated())
@@ -155,7 +155,7 @@ namespace Cave.Web
                 Trace.TraceInformation("Request {0} Invoke Method {1}", data.Request, data.Method);
             }
 
-            if (Instance is Action<WebData> func)
+            if (instance is Action<WebData> func)
             {
                 func.Invoke(data);
                 if (data.Server.VerboseMode)
@@ -166,8 +166,8 @@ namespace Cave.Web
                 return;
             }
 
-            Set<string> usedParameters = new Set<string>(data.Request.Parameters.Keys);
-            ArrayList parameters = new ArrayList();
+            var usedParameters = new Set<string>(data.Request.Parameters.Keys);
+            var parameters = new ArrayList();
             foreach (ParameterInfo p in Method.GetParameters())
             {
                 if (p.ParameterType == typeof(WebData))
@@ -195,14 +195,14 @@ namespace Cave.Web
                 {
                     if (data.Request.MultiPartFormData.TryGet(p.Name, out WebSinglePart part))
                     {
-                        //binary ?
+                        // binary ?
                         if (p.ParameterType == typeof(byte[]))
                         {
                             parameters.Add(part.Content);
                         }
                         else
                         {
-                            //no convert from string
+                            // no convert from string
                             string value = Encoding.UTF8.GetString(part.Content);
                             parameters.Add(Fields.ConvertValue(p.ParameterType, value, CultureInfo.InvariantCulture));
                         }
@@ -240,7 +240,7 @@ namespace Cave.Web
                 }
             }
 
-            Method.Invoke(Instance, parameters.ToArray());
+            Method.Invoke(instance, parameters.ToArray());
             if (data.Server.VerboseMode)
             {
                 Trace.TraceInformation("{0} {1}: Completed call to <green>{2}<default>. Elapsed {3}", data.Request.SourceAddress, data.Session, Name, data.Elapsed.FormatTime());
@@ -248,10 +248,9 @@ namespace Cave.Web
         }
 
         /// <summary>Returns a string for the parameter definition.</summary>
-        /// <returns>Returns a string for the parameter definition.</returns>
         public string ParameterString()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             int i = 0;
             foreach (ParameterInfo p in Method.GetParameters())
             {
@@ -269,8 +268,9 @@ namespace Cave.Web
                 {
                     sb.Append("[");
                 }
-                //sb.Append(p.ParameterType.Name);
-                //sb.Append(" ");
+
+                // sb.Append(p.ParameterType.Name);
+                // sb.Append(" ");
                 sb.Append(p.Name);
                 if (p.IsOptional)
                 {
@@ -284,8 +284,8 @@ namespace Cave.Web
         /// <returns>A <see cref="string" /> that represents this instance.</returns>
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(Instance.GetType().Name);
+            var sb = new StringBuilder();
+            sb.Append(instance.GetType().Name);
             sb.Append('.');
             sb.Append(Method.Name);
             sb.Append('(');

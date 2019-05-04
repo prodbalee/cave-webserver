@@ -1,7 +1,7 @@
 ﻿namespace Cave.Web
 {
     /// <summary>
-    /// Provides available result types
+    /// Provides available result types.
     /// </summary>
     public enum WebResultType
     {

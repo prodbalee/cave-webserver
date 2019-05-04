@@ -5,7 +5,7 @@ using System.Linq;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides an attribute for defining entry points of the <see cref="WebServer"/> class
+    /// Provides an attribute for defining entry points of the <see cref="WebServer"/> class.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     public sealed class WebPageAttribute : Attribute

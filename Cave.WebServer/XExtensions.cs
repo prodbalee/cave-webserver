@@ -7,7 +7,7 @@ using Cave.Data;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides extensions for XElement and XDocument
+    /// Provides extensions for XElement and XDocument.
     /// </summary>
     public static class XExtensions
     {
@@ -16,7 +16,7 @@ namespace Cave.Web
         /// <returns></returns>
         public static XElement ToXElement(this FieldProperties field)
         {
-            XElement xfield = new XElement("Field");
+            var xfield = new XElement("Field");
             xfield.SetAttributeValue("Name", field.Name);
             xfield.SetAttributeValue("DataType", field.DataType);
             if (field.Flags != 0)
@@ -54,7 +54,7 @@ namespace Cave.Web
         /// <returns></returns>
         public static XElement ToXElement(this RowLayout layout)
         {
-            XElement xlayout = new XElement("Layout");
+            var xlayout = new XElement("Layout");
             xlayout.SetAttributeValue("FieldCount", layout.FieldCount);
             foreach (FieldProperties field in layout.Fields)
             {
@@ -94,7 +94,7 @@ namespace Cave.Web
                 settings = DefaultSettings;
             }
 
-            using (XmlWriter writer = XmlWriter.Create(stream, settings))
+            using (var writer = XmlWriter.Create(stream, settings))
             {
                 element.WriteTo(writer);
             }
@@ -111,7 +111,7 @@ namespace Cave.Web
                 settings = DefaultSettings;
             }
 
-            using (XmlWriter writer = XmlWriter.Create(stream, settings))
+            using (var writer = XmlWriter.Create(stream, settings))
             {
                 doc.WriteTo(writer);
             }

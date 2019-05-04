@@ -1,7 +1,7 @@
 ﻿namespace Cave.Web
 {
     /// <summary>
-    /// Provides available web commands
+    /// Provides available web commands.
     /// </summary>
     public enum WebCommand
     {

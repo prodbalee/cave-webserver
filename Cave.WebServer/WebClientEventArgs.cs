@@ -3,9 +3,9 @@
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides event arguments for <see cref="IWebClient"/>
+    /// Provides event arguments for <see cref="IWebClient"/>.
     /// </summary>
-    /// <seealso cref="System.EventArgs" />
+    /// <seealso cref="EventArgs" />
     public class WebClientEventArgs : EventArgs
     {
         /// <summary>Initializes a new instance of the <see cref="WebClientEventArgs"/> class.</summary>

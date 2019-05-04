@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides web data
+    /// Provides web data.
     /// </summary>
     public class WebData
     {
@@ -14,23 +14,23 @@ namespace Cave.Web
         /// <value>The stop watch.</value>
         internal Stopwatch StopWatch { get; private set; }
 
-        /// <summary>The result to be sent to the client</summary>
+        /// <summary>Gets the result to be sent to the client.</summary>
         public WebResultBuilder Result { get; internal set; }
 
         /// <summary>Gets or sets the answer.</summary>
         /// <value>The answer.</value>
         public WebAnswer Answer { get; set; }
 
-        /// <summary>The method to be called</summary>
+        /// <summary>Gets the method to be called.</summary>
         public WebServerMethod Method { get; internal set; }
 
-        /// <summary>The request retrieved from the client</summary>
+        /// <summary>Gets the request retrieved from the client.</summary>
         public WebRequest Request { get; }
 
-        /// <summary>The server instance</summary>
+        /// <summary>Gets the server instance.</summary>
         public WebServer Server => Request.Server;
 
-        /// <summary>Gets or sets the session.</summary>
+        /// <summary>Gets the session.</summary>
         /// <value>The session.</value>
         public WebSession Session
         {
@@ -53,7 +53,9 @@ namespace Cave.Web
         /// <value>The elapsed time.</value>
         public TimeSpan Elapsed => StopWatch.Elapsed;
 
-        /// <summary>Creates a new instance</summary>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebData"/> class.
+        /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="stopWatch">The stopwatch.</param>
         internal WebData(WebRequest request, Stopwatch stopWatch)
@@ -61,7 +63,8 @@ namespace Cave.Web
             StopWatch = stopWatch;
             Request = request;
             Result = new WebResultBuilder(request);
-            //check for method call
+
+            // check for method call
             {
                 string url = request.DecodedUrl.TrimEnd('/');
                 if (url.Length == 0)
@@ -76,7 +79,9 @@ namespace Cave.Web
             }
         }
 
-        /// <summary>Creates a new instance</summary>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WebData"/> class.
+        /// </summary>
         /// <param name="server">The server.</param>
         /// <param name="stopWatch">The stop watch.</param>
         internal WebData(WebServer server, Stopwatch stopWatch)

@@ -10,7 +10,7 @@ using Cave.Net;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides simple data serialization for <see cref="WebServerMethod"/>
+    /// Provides simple data serialization for <see cref="WebServerMethod"/>.
     /// </summary>
     public class WebResultBuilder
     {
@@ -28,7 +28,8 @@ namespace Cave.Web
                 Layout = layout;
             }
 
-            public void AddStruct<T>(T row) where T : struct
+            public void AddStruct<T>(T row)
+                where T : struct
             {
                 AddRow(Row.Create(Layout, row));
             }
@@ -48,9 +49,9 @@ namespace Cave.Web
             public string Name { get; }
         }
 
-        WebMessage m_LastMessage;
-        Dictionary<string, SerializerTable> m_Tables = new Dictionary<string, SerializerTable>();
-        int m_MessageCount;
+        readonly Dictionary<string, SerializerTable> tables = new Dictionary<string, SerializerTable>();
+        WebMessage lastMessage;
+        int messageCount;
 
         /// <summary>Gets the server.</summary>
         /// <value>The server.</value>
@@ -176,8 +177,8 @@ namespace Cave.Web
         /// <param name="message">The message.</param>
         public void AddMessage(WebMessage message)
         {
-            message.ID = ++m_MessageCount;
-            m_LastMessage = message;
+            message.ID = ++messageCount;
+            lastMessage = message;
             AddStruct(message);
         }
 
@@ -185,14 +186,14 @@ namespace Cave.Web
         /// <typeparam name="T"></typeparam>
         /// <param name="row">The row.</param>
         /// <param name="tableName">Name of the table.</param>
-        /// <exception cref="System.Exception"></exception>
-        public void AddStruct<T>(T row, string tableName = null) where T : struct
+        public void AddStruct<T>(T row, string tableName = null)
+            where T : struct
         {
-            RowLayout layout = RowLayout.CreateTyped(typeof(T));
+            var layout = RowLayout.CreateTyped(typeof(T));
             if (tableName == null) { tableName = layout.Name; }
-            if (!m_Tables.TryGetValue(tableName, out SerializerTable result))
+            if (!tables.TryGetValue(tableName, out SerializerTable result))
             {
-                m_Tables[tableName] = result = new SerializerTable(layout, tableName);
+                tables[tableName] = result = new SerializerTable(layout, tableName);
             }
             result.AddStruct(row);
         }
@@ -201,14 +202,14 @@ namespace Cave.Web
         /// <typeparam name="T"></typeparam>
         /// <param name="rows">The rows.</param>
         /// <param name="tableName">Name of the table.</param>
-        /// <exception cref="System.Exception"></exception>
-        public void AddStructs<T>(IEnumerable<T> rows, string tableName = null) where T : struct
+        public void AddStructs<T>(IEnumerable<T> rows, string tableName = null)
+            where T : struct
         {
-            RowLayout layout = RowLayout.CreateTyped(typeof(T));
+            var layout = RowLayout.CreateTyped(typeof(T));
             if (tableName == null) { tableName = layout.Name; }
-            if (!m_Tables.TryGetValue(tableName, out SerializerTable result))
+            if (!tables.TryGetValue(tableName, out SerializerTable result))
             {
-                m_Tables[tableName] = result = new SerializerTable(layout, tableName);
+                tables[tableName] = result = new SerializerTable(layout, tableName);
             }
             foreach (T row in rows)
             {
@@ -220,13 +221,12 @@ namespace Cave.Web
         /// <param name="rows">The rows.</param>
         /// <param name="layout">The layout.</param>
         /// <param name="tableName">Name of the table.</param>
-        /// <exception cref="System.Exception"></exception>
         public void AddRows(IEnumerable<Row> rows, RowLayout layout, string tableName = null)
         {
             if (tableName == null) { tableName = layout.Name; }
-            if (!m_Tables.TryGetValue(tableName, out SerializerTable result))
+            if (!tables.TryGetValue(tableName, out SerializerTable result))
             {
-                m_Tables[tableName] = result = new SerializerTable(layout, tableName);
+                tables[tableName] = result = new SerializerTable(layout, tableName);
             }
             foreach (Row row in rows)
             {
@@ -237,7 +237,6 @@ namespace Cave.Web
         /// <summary>Adds result content rows.</summary>
         /// <param name="table">The table.</param>
         /// <param name="tableName">Name of the table.</param>
-        /// <exception cref="System.Exception"></exception>
         public void AddTable(ITable table, string tableName = null)
         {
             AddRows(table.GetRows(), table.Layout, tableName);
@@ -245,7 +244,7 @@ namespace Cave.Web
 
         /// <summary>Sets the cache time.</summary>
         /// <param name="cacheTime">The cache time.</param>
-        /// <exception cref="ArgumentOutOfRangeException">cacheTime</exception>
+        /// <exception cref="ArgumentOutOfRangeException">cacheTime.</exception>
         public void SetCacheTime(TimeSpan cacheTime)
         {
             if (Headers.ContainsKey("Cache-Control"))
@@ -263,7 +262,7 @@ namespace Cave.Web
             Headers["Expires"] = (DateTime.UtcNow + cacheTime).ToString("R");
         }
 
-        /// <summary>The headers to transmit</summary>
+        /// <summary>Gets the headers to transmit.</summary>
         public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
         /// <summary>Gets or sets a value indicating whether [allow compression].</summary>
@@ -290,7 +289,6 @@ namespace Cave.Web
 
         /// <summary>Retrieves the answer.</summary>
         /// <returns></returns>
-        /// <exception cref="NotSupportedException"></exception>
         public WebAnswer ToAnswer()
         {
             WebAnswer answer;
@@ -314,19 +312,19 @@ namespace Cave.Web
 
         private WebAnswer GetPlainAnswer()
         {
-            using (MemoryStream ms = new MemoryStream())
+            using (var ms = new MemoryStream())
             {
-                foreach (KeyValuePair<string, SerializerTable> t in m_Tables)
+                foreach (KeyValuePair<string, SerializerTable> t in tables)
                 {
                     SerializerTable table = t.Value;
                     ms.WriteUtf8($"[Table: {table.Name}]\n");
-                    CSVWriter writer = new CSVWriter(ms);
+                    var writer = new CSVWriter(ms);
                     writer.SetLayout(table.Layout);
                     writer.WriteRows(table.Rows);
                     writer.Close();
                     ms.WriteUtf8($"#end table: {table.Name}\n\n");
                 }
-                return WebAnswer.Plain(Request, m_LastMessage, ms.ToArray());
+                return WebAnswer.Plain(Request, lastMessage, ms.ToArray());
             }
         }
 
@@ -338,14 +336,14 @@ namespace Cave.Web
                 flags |= XmlSerializer.Flags.WithLayout;
             }
 
-            XmlSerializer xml = new XmlSerializer(Server.JsonVersion, flags);
-            foreach (KeyValuePair<string, SerializerTable> t in m_Tables)
+            var xml = new XmlSerializer(Server.JsonVersion, flags);
+            foreach (KeyValuePair<string, SerializerTable> t in tables)
             {
                 SerializerTable table = t.Value;
                 xml.Serialize(table.Name, table.Layout, table.Rows);
             }
 
-            return WebAnswer.Xml(Request, m_LastMessage, xml.ToString());
+            return WebAnswer.Xml(Request, lastMessage, xml.ToString());
         }
 
         WebAnswer GetJsonAnswer()
@@ -361,19 +359,18 @@ namespace Cave.Web
                 flags |= JsonSerializer.Flags.WithLayout;
             }
 
-            JsonSerializer json = new JsonSerializer(Server.JsonVersion, flags);
+            var json = new JsonSerializer(Server.JsonVersion, flags);
 
-            foreach (KeyValuePair<string, SerializerTable> t in m_Tables)
+            foreach (KeyValuePair<string, SerializerTable> t in tables)
             {
                 SerializerTable table = t.Value;
                 json.Serialize(table.Name, table.Layout, table.Rows);
             }
-            return WebAnswer.Json(Request, m_LastMessage, json.ToString());
+            return WebAnswer.Json(Request, lastMessage, json.ToString());
         }
 
         WebAnswer GetHtmlAnswer()
         {
-
             HtmlPageBuilder html;
             if (Request != null)
             {
@@ -388,7 +385,7 @@ namespace Cave.Web
                 html.Breadcrump.Add(new WebLink() { Link = link, Text = Server.Title });
             }
 
-            foreach (KeyValuePair<string, SerializerTable> t in m_Tables)
+            foreach (KeyValuePair<string, SerializerTable> t in tables)
             {
                 SerializerTable table = t.Value;
                 html.StartTable(table.Name, table.Layout);
@@ -399,7 +396,7 @@ namespace Cave.Web
                 html.CloseTable();
             }
 
-            return html.ToAnswer(m_LastMessage);
+            return html.ToAnswer(lastMessage);
         }
     }
 }

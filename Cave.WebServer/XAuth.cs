@@ -7,7 +7,7 @@ using Cave.Auth;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides authentication and user functions on auth.cave.cloud
+    /// Provides authentication and user functions on auth.cave.cloud.
     /// </summary>
     public class XAuth
     {
@@ -15,7 +15,7 @@ namespace Cave.Web
         public XAuth() { }
 
         #region private class
-        System.Threading.Timer m_Timer;
+        System.Threading.Timer timer;
 
         WebMessage LoadSessionResult(XmlRequest request)
         {
@@ -57,8 +57,8 @@ namespace Cave.Web
             }
             if (Session.IsExpired())
             {
-                m_Timer?.Dispose();
-                m_Timer = null;
+                timer?.Dispose();
+                timer = null;
                 OnSessionUpdated(new EventArgs());
             }
         }
@@ -69,7 +69,7 @@ namespace Cave.Web
         {
             if (SessionUpdated != null)
             {
-                Task.Factory.StartNew(delegate
+                Task.Factory.StartNew(() =>
                 {
                     SessionUpdated?.Invoke(this, e);
                 });
@@ -77,18 +77,18 @@ namespace Cave.Web
         }
         #endregion
 
-        #region public local functions         
+        #region public local functions
 
         /// <summary>
-        /// Loads credentials from the default auth ini file
+        /// Loads credentials from the default auth ini file.
         /// </summary>
-        /// <param name="user">user name</param>
-        /// <param name="pass">password</param>
-        /// <returns>Returns true on success, false otherwise</returns>
+        /// <param name="user">user name.</param>
+        /// <param name="pass">password.</param>
+        /// <returns>Returns true on success, false otherwise.</returns>
         public bool LoadCredentials(out string user, out string pass)
         {
-            FileLocation location = new FileLocation(RootLocation.RoamingUserConfig, "CaveSystems GmbH", null, "auth", Ini.PlatformExtension);
-            IniReader reader = IniReader.FromLocation(location);
+            var location = new FileLocation(RootLocation.RoamingUserConfig, "CaveSystems GmbH", null, "auth", Ini.PlatformExtension);
+            var reader = IniReader.FromLocation(location);
             user = reader.ReadString("auth", "user");
             pass = reader.ReadString("auth", "pass");
             user = user ?? user.Trim();
@@ -97,32 +97,31 @@ namespace Cave.Web
         }
 
         /// <summary>
-        /// Saves credentials to the default ini file
+        /// Saves credentials to the default ini file.
         /// </summary>
-        /// <param name="user">user name</param>
-        /// <param name="pass">password</param>
+        /// <param name="user">user name.</param>
+        /// <param name="pass">password.</param>
         public void SaveCredentials(string user, string pass)
         {
-            FileLocation location = new FileLocation(RootLocation.RoamingUserConfig, "CaveSystems GmbH", null, "auth", Ini.PlatformExtension);
-            IniWriter writer = IniWriter.FromLocation(location);
+            var location = new FileLocation(RootLocation.RoamingUserConfig, "CaveSystems GmbH", null, "auth", Ini.PlatformExtension);
+            var writer = IniWriter.FromLocation(location);
             writer.WriteSetting("auth", "user", user);
             writer.WriteSetting("auth", "pass", pass);
             writer.Save();
         }
         #endregion
 
-        #region public remote functions         
+        #region public remote functions
 
         /// <summary>Creates a new session.</summary>
         /// <param name="user">The user.</param>
         /// <param name="pass">The pass.</param>
         /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
         public WebMessage CreateSession(string user, string pass)
         {
             lock (this)
             {
-                XmlRequest request = XmlRequest.Prepare(Server, "CreateSession");
+                var request = XmlRequest.Prepare(Server, "CreateSession");
                 request.Credentials = new NetworkCredential(user, pass);
                 WebMessage message = request.Post();
                 if (message.Error != WebError.None)
@@ -131,22 +130,21 @@ namespace Cave.Web
                 }
 
                 message = LoadSessionResult(request);
-                m_Timer?.Dispose();
-                m_Timer = new System.Threading.Timer(CheckSession, null, 1000 * 10, 1000 * 10);
+                timer?.Dispose();
+                timer = new System.Threading.Timer(CheckSession, null, 1000 * 10, 1000 * 10);
                 return message;
             }
         }
 
         /// <summary>Closes the current session.</summary>
         /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
         public WebMessage CloseSession()
         {
             lock (this)
             {
                 if (Session.IsValid())
                 {
-                    XmlRequest request = XmlRequest.Prepare(Server, "CloseSession");
+                    var request = XmlRequest.Prepare(Server, "CloseSession");
                     WebMessage message = request.Post();
                     if (message.Error != WebError.None)
                     {
@@ -160,11 +158,10 @@ namespace Cave.Web
         }
 
         /// <summary>Performs a session check. A successful check extends the session.</summary>
-        /// <exception cref="XAuthException"></exception>
         public void CheckSession()
         {
             Trace.TraceInformation("Checking session {0}", Session);
-            XmlRequest request = XmlRequest.Prepare(Server, "CheckSession");
+            var request = XmlRequest.Prepare(Server, "CheckSession");
             request.Headers["Session"] = Session.ID.ToString();
             WebMessage message = request.Post();
             if (message.Error != WebError.None)
@@ -184,12 +181,11 @@ namespace Cave.Web
         /// <param name="birthday">The birthday.</param>
         /// <param name="gender">The gender.</param>
         /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
         public WebMessage CreateAccount(string user, string email, string firstname, string lastname, DateTime birthday, Gender gender)
         {
             lock (this)
             {
-                XmlRequest request = XmlRequest.Prepare(Server, "CreateAccount", $"user={user}",
+                var request = XmlRequest.Prepare(Server, "CreateAccount", $"user={user}",
                     $"email={email}", $"firstname={firstname}", $"lastname={lastname}", $"gender={gender}",
                     $"birthday={birthday.Date}");
                 WebMessage message = request.Post();
@@ -205,12 +201,11 @@ namespace Cave.Web
         /// <summary>Requests a new password.</summary>
         /// <param name="email">The email.</param>
         /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
         public WebMessage RequestNewPassword(string email)
         {
             lock (this)
             {
-                XmlRequest request = XmlRequest.Prepare(Server, "RequestNewPassword", $"email={email}");
+                var request = XmlRequest.Prepare(Server, "RequestNewPassword", $"email={email}");
                 WebMessage message = request.Post();
                 if (message.Error != WebError.None)
                 {
@@ -224,13 +219,12 @@ namespace Cave.Web
         /// <summary>Gets a transaction key.</summary>
         /// <param name="url">The URL.</param>
         /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
         public TransactionKey GetTransactionKey(string url)
         {
             lock (this)
             {
                 string hash = Base64.UrlChars.Encode(Hash.FromString(Hash.Type.SHA256, url));
-                XmlRequest request = XmlRequest.Prepare(Server, "GetTransactionKey", $"urlHash={hash}");
+                var request = XmlRequest.Prepare(Server, "GetTransactionKey", $"urlHash={hash}");
                 request.Headers["Session"] = Session.ID.ToString();
                 WebMessage message = request.Post();
                 if (message.Error != WebError.None)
@@ -244,12 +238,11 @@ namespace Cave.Web
 
         /// <summary>Gets the user details.</summary>
         /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
         public FullUserDetails GetUserDetails()
         {
             lock (this)
             {
-                XmlRequest request = XmlRequest.Prepare(Server, "GetUserDetails");
+                var request = XmlRequest.Prepare(Server, "GetUserDetails");
                 request.Headers["Session"] = Session.ID.ToString();
                 WebMessage message = request.Post();
                 if (message.Error != WebError.None)
@@ -259,7 +252,7 @@ namespace Cave.Web
 
                 XmlDeserializer des = request.Result;
 
-                FullUserDetails result = new FullUserDetails
+                var result = new FullUserDetails
                 {
                     User = des.GetRow<User>("User"),
                     UserDetail = des.GetRow<UserDetail>("UserDetail"),
@@ -268,22 +261,22 @@ namespace Cave.Web
                     PhoneNumbers = des.GetTable<PhoneNumber>("PhoneNumbers"),
                     EmailAddresses = des.GetTable<EmailAddress>("EmailAddresses"),
                     Groups = des.GetTable<Group>("Groups"),
-                    GroupMembers = des.GetTable<GroupMember>("GroupMembers")
+                    GroupMembers = des.GetTable<GroupMember>("GroupMembers"),
                 };
                 return result;
             }
         }
 
         #region Group functions
+
         /// <summary>Performs a create group command.</summary>
         /// <param name="groupName">Name of the group.</param>
         /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
         public XmlDeserializer GroupCreate(string groupName)
         {
             lock (this)
             {
-                XmlRequest request = XmlRequest.Prepare(Server, "GroupCreate", $"groupName={groupName}");
+                var request = XmlRequest.Prepare(Server, "GroupCreate", $"groupName={groupName}");
                 request.Headers["Session"] = Session.ID.ToString();
                 WebMessage message = request.Post();
                 if (message.Error != WebError.None)
@@ -299,12 +292,11 @@ namespace Cave.Web
         /// <param name="groupID">The group identifier.</param>
         /// <param name="email">The email.</param>
         /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
         public WebMessage GroupInviteUser(long groupID, string email)
         {
             lock (this)
             {
-                XmlRequest request = XmlRequest.Prepare(Server, "GroupInviteUser", $"groupID={groupID}", $"email={email}");
+                var request = XmlRequest.Prepare(Server, "GroupInviteUser", $"groupID={groupID}", $"email={email}");
                 request.Headers["Session"] = Session.ID.ToString();
                 WebMessage message = request.Post();
                 if (message.Error != WebError.None)
@@ -319,12 +311,11 @@ namespace Cave.Web
         /// <summary>Performs a leave group command.</summary>
         /// <param name="groupID">The group identifier.</param>
         /// <returns></returns>
-        /// <exception cref="WebServerException"></exception>
         public WebMessage GroupLeave(long groupID)
         {
             lock (this)
             {
-                XmlRequest request = XmlRequest.Prepare(Server, "GroupLeave", $"groupID={groupID}");
+                var request = XmlRequest.Prepare(Server, "GroupLeave", $"groupID={groupID}");
                 request.Headers["Session"] = Session.ID.ToString();
                 WebMessage message = request.Post();
                 if (message.Error != WebError.None)
@@ -336,7 +327,6 @@ namespace Cave.Web
             }
         }
         #endregion
-
 
         #endregion
 

@@ -19,33 +19,38 @@ using Cave.Net;
 namespace Cave.Web
 {
     /// <summary>
-    /// Provides a WebServer
+    /// Provides a WebServer.
     /// </summary>
     public class WebServer
     {
+        /// <summary>Gets the name of the log source.</summary>
+        /// <value>The name of the log source.</value>
+        public const string TypeName = "CaveWebServer";
+
         #region private implementation
 
         #region private fields
-        X509Certificate2 m_Certificate;
-        Dictionary<string, WebServerMethod> m_Paths = new Dictionary<string, WebServerMethod>();
-        WebExplain m_Explain = new WebExplain();
-        Set<TcpServer<WebServerClient>> m_TcpServers = new Set<TcpServer<WebServerClient>>();
-        IDictionary<string, WebTemplate> m_Templates;
-        bool m_Exit;
-        string m_CopyRight;
+        readonly Dictionary<string, WebServerMethod> paths = new Dictionary<string, WebServerMethod>();
+        readonly WebExplain explain = new WebExplain();
+        readonly Set<TcpServer<WebServerClient>> tcpServers = new Set<TcpServer<WebServerClient>>();
+
+        X509Certificate2 certificate;
+        IDictionary<string, WebTemplate> templates;
+        bool exit;
+        string copyRight;
         #endregion
 
         #region private functions
 
         void ClientAccepted(object sender, TcpServerClientEventArgs<WebServerClient> e)
         {
-            e.Client.m_Server = this;
+            e.Client.WebServer = this;
         }
 
         WebAnswer GetStaticFile(WebRequest request)
         {
             string url = Uri.UnescapeDataString(request.DecodedUrl).TrimStart('/');
-            if (url == "")
+            if (url == string.Empty)
             {
                 url = "index.html";
             }
@@ -66,10 +71,11 @@ namespace Cave.Web
             }
 
             Trace.TraceInformation("Get static file {0}", url);
-            WebAnswer answer = WebAnswer.Raw(
+            var answer = WebAnswer.Raw(
                  request,
                  WebMessage.Create(request.PlainUrl, $"<cyan>{url} <default>retrieved."),
-                 File.ReadAllBytes(file), MimeTypes.FromExtension(Path.GetExtension(file)));
+                 File.ReadAllBytes(file),
+                 MimeTypes.FromExtension(Path.GetExtension(file)));
             return answer;
         }
 
@@ -77,12 +83,12 @@ namespace Cave.Web
         {
             string url = Uri.UnescapeDataString(data.Request.DecodedUrl).Trim('/');
             string path = FileSystem.Combine(StaticFilesPath, url);
-            List<WebDirectoryEntry> entries = new List<WebDirectoryEntry>();
+            var entries = new List<WebDirectoryEntry>();
             string root = FileSystem.Combine(path, "..");
             if (FileSystem.IsRelative(root, StaticFilesPath))
             {
                 FileSystemInfo info = new DirectoryInfo(root);
-                WebDirectoryEntry entry = new WebDirectoryEntry()
+                var entry = new WebDirectoryEntry()
                 {
                     DateTime = info.LastWriteTime,
                     Name = "..",
@@ -96,7 +102,7 @@ namespace Cave.Web
                 foreach (string dir in Directory.GetDirectories(path))
                 {
                     FileSystemInfo info = new DirectoryInfo(dir);
-                    WebDirectoryEntry entry = new WebDirectoryEntry()
+                    var entry = new WebDirectoryEntry()
                     {
                         DateTime = info.LastWriteTime,
                         Name = info.Name,
@@ -107,8 +113,8 @@ namespace Cave.Web
                 }
                 foreach (string file in Directory.GetFiles(path))
                 {
-                    FileInfo info = new FileInfo(file);
-                    WebDirectoryEntry entry = new WebDirectoryEntry()
+                    var info = new FileInfo(file);
+                    var entry = new WebDirectoryEntry()
                     {
                         DateTime = info.LastWriteTime,
                         Size = info.Length,
@@ -119,7 +125,7 @@ namespace Cave.Web
                     entries.Add(entry);
                 }
             }
-            HtmlPageBuilder pb = new HtmlPageBuilder(data.Request);
+            var pb = new HtmlPageBuilder(data.Request);
             pb.Content.CardOpenText($"File Listing:");
             pb.Content.ParagraphText($"{entries.Count} entries");
             pb.Content.TableOpen(new string[] { "Type", "Size", "Name" }, "table-striped table-responsive");
@@ -127,7 +133,7 @@ namespace Cave.Web
             {
                 pb.Content.TableRowOpen();
                 pb.Content.TableHtmlCell(Bootstrap4.GetBadge(entry.Type.ToString(), "badge-default"));
-                pb.Content.TableCell(entry.Type == WebDirectoryEntryType.Directory ? "" : entry.Size.FormatBinarySize());
+                pb.Content.TableCell(entry.Type == WebDirectoryEntryType.Directory ? string.Empty : entry.Size.FormatBinarySize());
                 pb.Content.TableHtmlCell(Bootstrap4.GetLink(entry.Name, entry.Link));
                 pb.Content.TableRowClose();
             }
@@ -139,8 +145,9 @@ namespace Cave.Web
         #endregion
 
         #region connection handling
+
         /// <summary>Handles a client stage1 (preparations).</summary>
-        /// <remarks>Performs the firewall checks and enters stage2</remarks>
+        /// <remarks>Performs the firewall checks and enters stage2.</remarks>
         internal void HandleClient(WebServerClient client)
         {
             System.Globalization.CultureInfo threadCulture = Thread.CurrentThread.CurrentCulture;
@@ -148,9 +155,10 @@ namespace Cave.Web
             WebResultBuilder result = null;
             try
             {
-                //callback for connected client
+                // callback for connected client
                 ClientConnected?.Invoke(this, new WebClientEventArgs(client));
-                //do request handling
+
+                // do request handling
                 int requestNumber = 0;
                 if (PerformanceChecks)
                 {
@@ -168,7 +176,7 @@ namespace Cave.Web
                             $"Elapsed <cyan>{client.StopWatch.Elapsed.FormatTime()}<default>.");
                     }
 
-                    //read first request line
+                    // read first request line
                     string firstLine = client.Reader.ReadLine();
                     client.StopWatch.Reset();
                     if (PerformanceChecks)
@@ -177,15 +185,18 @@ namespace Cave.Web
                             $"HandleClient [{threadId}] <cyan>{client.RemoteEndPoint}<default> start handling request <cyan>{++requestNumber}<default>. " +
                             $"Elapsed <cyan>{client.StopWatch.Elapsed.FormatTime()}<default>.");
                     }
-                    //load request
-                    WebRequest request = WebRequest.Load(this, firstLine, client);
-                    //prepare web data object
-                    WebData data = new WebData(request, client.StopWatch);
+
+                    // load request
+                    var request = WebRequest.Load(this, firstLine, client);
+
+                    // prepare web data object
+                    var data = new WebData(request, client.StopWatch);
                     result = data.Result;
-                    //update thread culture
+
+                    // update thread culture
                     Thread.CurrentThread.CurrentCulture = data.Request.Culture;
 
-                    //handle request but change some default exceptions to web exceptions
+                    // handle request but change some default exceptions to web exceptions
                     try { HandleRequest(client, data); }
                     catch (ObjectDisposedException)
                     {
@@ -250,7 +261,8 @@ namespace Cave.Web
 
                 client.Close();
                 if (client != null) { ClientDisconnected?.Invoke(this, new WebClientEventArgs(client)); }
-                //reset thread culture
+
+                // reset thread culture
                 if (Thread.CurrentThread.CurrentCulture != threadCulture)
                 {
                     Thread.CurrentThread.CurrentCulture = threadCulture;
@@ -260,7 +272,7 @@ namespace Cave.Web
 
         void HandleRequest(WebServerClient client, WebData data)
         {
-            //add acl headers
+            // add acl headers
             if (Certificate != null)
             {
                 data.Result.Headers["Strict-Transport-Security"] = "max-age=604800; includeSubDomains";
@@ -302,7 +314,7 @@ namespace Cave.Web
 
                 if (StaticRequest != null)
                 {
-                    WebPageEventArgs e = new WebPageEventArgs(data);
+                    var e = new WebPageEventArgs(data);
                     StaticRequest(this, e);
                     if (e.Handled)
                     {
@@ -318,55 +330,57 @@ namespace Cave.Web
                     return;
                 }
 
-                //no method - send static file ?
+                // no method - send static file ?
                 WebAnswer staticFile = GetStaticFile(data.Request);
                 if (staticFile != null)
                 {
-                    //file present, send answer
+                    // file present, send answer
                     Trace.TraceInformation("Static file: {0} {1}", data.Request, staticFile);
                     SetStaticCacheTime(staticFile, StaticPathCacheTime);
                     client.SendAnswer(staticFile);
                     return;
                 }
-                //static path access -> set cache time
+
+                // static path access -> set cache time
                 SetStaticCacheTime(data, StaticPathCacheTime);
-                //file not present, check special functions				
+
+                // file not present, check special functions
                 if (EnableExplain && (data.Request.DecodedUrl.ToLower() == "/explain" || data.Request.DecodedUrl.ToLower() == "/functionlist"))
                 {
-                    //special page (function list / explain)
-                    m_Explain.Explain(data);
+                    // special page (function list / explain)
+                    explain.Explain(data);
                 }
                 else if (EnableFileListing)
                 {
-                    //list files
+                    // list files
                     GetStaticFileListing(data);
                 }
                 else
                 {
-                    //no static -> error
+                    // no static -> error
                     data.Result.AddMessage(data.Request.PlainUrl, WebError.NotFound, $"The requested URL {data.Request.DecodedUrl} was not found on this server.");
                 }
                 client.SendAnswer(data);
                 return;
             }
 
-            //invoke method
+            // invoke method
             CallMethod(data);
 
-            //send answer
+            // send answer
             client.SendAnswer(data);
         }
 
         private bool RunTemplate(WebData data)
         {
-            IDictionary<string, WebTemplate> templates = m_Templates;
+            IDictionary<string, WebTemplate> templates = this.templates;
             if (templates == null)
             {
                 return false;
             }
 
             string key = Uri.UnescapeDataString(data.Request.DecodedUrl).TrimStart('/');
-            if (key == "")
+            if (key == string.Empty)
             {
                 key = "index";
             }
@@ -392,15 +406,17 @@ namespace Cave.Web
 
         #endregion
 
-        #region public events        
-        /// <summary>The client connected event</summary>
+        #region public events
+
+        /// <summary>The client connected event.</summary>
         public EventHandler<WebClientEventArgs> ClientConnected;
 
-        /// <summary>The client disconnected event</summary>
+        /// <summary>The client disconnected event.</summary>
         public EventHandler<WebClientEventArgs> ClientDisconnected;
         #endregion
 
-        #region public properties		
+        #region public properties
+
         /// <summary>Gets the authentication tables.</summary>
         /// <value>The authentication tables.</value>
         public AuthTables AuthTables { get; } = new AuthTables();
@@ -428,13 +444,13 @@ namespace Cave.Web
 
         /// <summary>Gets all registered paths.</summary>
         /// <value>The paths.</value>
-        public IDictionary<string, WebServerMethod> RegisteredPaths => new ReadOnlyDictionary<string, WebServerMethod>(m_Paths);
+        public IDictionary<string, WebServerMethod> RegisteredPaths => new ReadOnlyDictionary<string, WebServerMethod>(paths);
 
-        /// <summary>Gets the name of the product.</summary>
+        /// <summary>Gets or sets the name of the product.</summary>
         /// <value>The name of the product.</value>
         public string Title { get; set; } = AssemblyVersionInfo.Program.Title;
 
-        /// <summary>The session mode</summary>
+        /// <summary>The session mode.</summary>
         public WebServerSessionMode SessionMode = WebServerSessionMode.None;
 
         /// <summary>Gets or sets the session timeout.</summary>
@@ -461,22 +477,22 @@ namespace Cave.Web
 
         DateTime ReleaseDate => VersionInfo.ReleaseDate;
 
-        /// <summary>Gets the server copyright string.</summary>
+        /// <summary>Gets or sets the server copyright string.</summary>
         /// <value>The server copyright string.</value>
         public string ServerCopyRight
         {
             get
             {
-                if (m_CopyRight == null)
+                if (copyRight == null)
                 {
-                    m_CopyRight = string.Format("2012-{0} Andreas Rohleder, 2015-{0} CaveSystems GmbH", ReleaseDate.Year);
+                    copyRight = string.Format("2012-{0} Andreas Rohleder, 2015-{0} CaveSystems GmbH", ReleaseDate.Year);
                 }
 
-                return m_CopyRight;
+                return copyRight;
             }
             set
             {
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 sb.AppendFormat("2012-{0} Andreas Rohleder, 2015-{0} CaveSystems GmbH", ReleaseDate.Year);
                 if (!string.IsNullOrEmpty(value))
                 {
@@ -484,26 +500,21 @@ namespace Cave.Web
                 }
 
                 sb.Append(value);
-                m_CopyRight = sb.ToString();
+                copyRight = sb.ToString();
             }
         }
-
-
-        /// <summary>Gets the name of the log source.</summary>
-        /// <value>The name of the log source.</value>
-        public const string TypeName = "CaveWebServer";
 
         /// <summary>Gets or sets the certificate.</summary>
         /// <value>The certificate.</value>
         public X509Certificate Certificate
         {
-            get => m_Certificate;
+            get => certificate;
             set
             {
-                X509Certificate2 cert = new X509Certificate2(value);
-                RSACryptoServiceProvider rsa = cert.PrivateKey as RSACryptoServiceProvider;
+                var cert = new X509Certificate2(value);
+                var rsa = cert.PrivateKey as RSACryptoServiceProvider;
                 rsa.ExportParameters(true);
-                m_Certificate = cert;
+                certificate = cert;
             }
         }
 
@@ -515,14 +526,18 @@ namespace Cave.Web
         /// <value><c>true</c> if [enable templates]; otherwise, <c>false</c>.</value>
         public bool EnableTemplates
         {
-            get => m_Templates != null;
+            get => templates != null;
             set
             {
-                if (!value) { m_Templates = null; return; }
+                if (!value)
+                {
+                    templates = null;
+                    return;
+                }
 #if NET20 || NET35
 				m_Templates = new SynchronizedDictionary<string, CaveWebTemplate>();
 #else
-                m_Templates = new System.Collections.Concurrent.ConcurrentDictionary<string, WebTemplate>();
+                templates = new System.Collections.Concurrent.ConcurrentDictionary<string, WebTemplate>();
 #endif
             }
         }
@@ -537,13 +552,13 @@ namespace Cave.Web
 
         /// <summary>Gets the local end points.</summary>
         /// <value>The local end points.</value>
-        public IPEndPoint[] LocalEndPoints => m_TcpServers.Select(s => s.LocalEndPoint).ToArray();
+        public IPEndPoint[] LocalEndPoints => tcpServers.Select(s => s.LocalEndPoint).ToArray();
 
         /// <summary>Gets or sets the static path cache time.</summary>
         /// <value>The static path cache time.</value>
         public TimeSpan StaticPathCacheTime { get; set; } = TimeSpan.FromHours(1);
 
-        /// <summary>Gets a value indicating whether session source address (ip) checks are performed.</summary>
+        /// <summary>Gets or sets a value indicating whether session source address (ip) checks are performed.</summary>
         /// <value><c>true</c> if [require session source check]; otherwise, <c>false</c>.</value>
         /// <remarks>Without session source checks the session may roam. This may increase the risk of hostile session takeover.</remarks>
         public bool RequireSessionSourceCheck { get; set; }
@@ -554,16 +569,17 @@ namespace Cave.Web
         public WebServer() { }
 
         #region public functions
+
         /// <summary>Finds the method for the specified url.</summary>
         /// <param name="url">The URL.</param>
         /// <returns>Returns a method instance or null.</returns>
         public WebServerMethod FindMethod(string url)
         {
-            if (!m_Paths.TryGetValue(url, out WebServerMethod method))
+            if (!paths.TryGetValue(url, out WebServerMethod method))
             {
                 while (url.Length > 1)
                 {
-                    if (m_Paths.TryGetValue(url + "/*", out method))
+                    if (paths.TryGetValue(url + "/*", out method))
                     {
                         break;
                     }
@@ -579,9 +595,9 @@ namespace Cave.Web
         /// <exception cref="ArgumentNullException">
         /// Session
         /// or
-        /// method
+        /// method.
         /// </exception>
-        /// <exception cref="Cave.Web.WebServerException">0</exception>
+        /// <exception cref="WebServerException">0.</exception>
         public void CallMethod(WebData data)
         {
             if (data?.Session == null)
@@ -621,7 +637,7 @@ namespace Cave.Web
                     continue;
                 }
 
-                WebServerMethod method = new WebServerMethod(instance, methodInfo, rootPath);
+                var method = new WebServerMethod(instance, methodInfo, rootPath);
                 Register(method);
             }
         }
@@ -630,7 +646,7 @@ namespace Cave.Web
         /// <param name="method">The method.</param>
         public void Register(WebServerMethod method)
         {
-            //register method at the defined paths
+            // register method at the defined paths
             foreach (string p in method.FullPaths)
             {
                 string path = "/" + p.TrimEnd('/');
@@ -639,32 +655,31 @@ namespace Cave.Web
                     path = path.Replace("//", "/");
                 }
 
-                //if method ist the index for specified the path, register it at the path root
+                // if method ist the index for specified the path, register it at the path root
                 if (path.EndsWith("/Index"))
                 {
                     string additional = path.Substring(0, path.Length - 6);
-                    if (additional == "")
+                    if (additional == string.Empty)
                     {
                         additional = "/";
                     }
 
-                    m_Paths.Add(additional, method);
+                    paths.Add(additional, method);
                     Trace.TraceInformation("Registered path <cyan>{0}<default> function {1}", additional, method);
                     if (!additional.EndsWith("/"))
                     {
                         additional += "/";
-                        m_Paths.Add(additional, method);
+                        paths.Add(additional, method);
                         Trace.TraceInformation("Registered path <cyan>{0}<default> function {1}", additional, method);
                     }
                 }
                 else
                 {
-                    m_Paths.Add(path, method);
+                    paths.Add(path, method);
                     Trace.TraceInformation("Registered path <cyan>{0}<default> function {1}", path, method);
                 }
             }
         }
-
 
         /// <summary>Listens the <see cref="IPEndPoint" />s or Ports read from at the specified ini.</summary>
         /// <param name="config">The configuration source.</param>
@@ -674,7 +689,7 @@ namespace Cave.Web
         /// or
         /// Ini file {0} does not contain a valid [Ports] or [IPEndPoints] section!
         /// or
-        /// IPEndPoint {0} invalid!</exception>
+        /// IPEndPoint {0} invalid!.</exception>
         public void Listen(ISettings config)
         {
             bool listening = false;
@@ -735,66 +750,66 @@ namespace Cave.Web
 
         /// <summary>Listens at the specified port.</summary>
         /// <param name="port">The port.</param>
-        /// <exception cref="InvalidOperationException">Already listening!</exception>
+        /// <exception cref="InvalidOperationException">Already listening!.</exception>
         public void Listen(int port)
         {
-            m_Exit = false;
+            exit = false;
             Trace.TraceInformation("Start listening at port {0}", port);
-            TcpServer<WebServerClient> server = new TcpServer<WebServerClient>();
-            server.ClientAccepted += this.ClientAccepted;
+            var server = new TcpServer<WebServerClient>();
+            server.ClientAccepted += ClientAccepted;
             server.Listen(port);
-            m_TcpServers.Add(server);
+            tcpServers.Add(server);
         }
 
         /// <summary>Listens at the specified port.</summary>
         /// <param name="endPoint">The end point.</param>
-        /// <exception cref="InvalidOperationException">Already listening!</exception>
+        /// <exception cref="InvalidOperationException">Already listening!.</exception>
         public void Listen(IPEndPoint endPoint)
         {
-            m_Exit = false;
+            exit = false;
             Trace.TraceInformation("Start listening at endpoint <cyan>{0}", endPoint);
-            TcpServer<WebServerClient> server = new TcpServer<WebServerClient>();
-            server.ClientAccepted += this.ClientAccepted;
+            var server = new TcpServer<WebServerClient>();
+            server.ClientAccepted += ClientAccepted;
             server.Listen(endPoint);
-            m_TcpServers.Add(server);
+            tcpServers.Add(server);
         }
 
         /// <summary>
-        /// Pause the webserver (will no longer accept new requests)
+        /// Pause the webserver (will no longer accept new requests).
         /// </summary>
         public void Pause()
         {
-            m_Exit = true;
+            exit = true;
         }
 
         /// <summary>
-        /// Continues the webserver (will accept new requests again after a call to <see cref="Pause"/>)
+        /// Continues the webserver (will accept new requests again after a call to <see cref="Pause"/>).
         /// </summary>
         public void Continue()
         {
-            m_Exit = false;
+            exit = false;
         }
 
         /// <summary>Closes this instance.</summary>
         public void Close()
         {
-            if (m_Exit)
+            if (exit)
             {
                 return;
             }
 
-            m_Exit = true;
-            foreach (TcpServer<WebServerClient> server in m_TcpServers)
+            exit = true;
+            foreach (TcpServer<WebServerClient> server in tcpServers)
             {
                 try { server.Close(); } catch { }
             }
-            m_TcpServers.Clear();
+            tcpServers.Clear();
         }
 
         /// <summary>Sets the static cache time.</summary>
         /// <param name="data">The data.</param>
         /// <param name="cacheTime">The cache time.</param>
-        /// <exception cref="ArgumentOutOfRangeException">cacheTime</exception>
+        /// <exception cref="ArgumentOutOfRangeException">cacheTime.</exception>
         public void SetStaticCacheTime(WebData data, TimeSpan cacheTime)
         {
             if (data.Result.Headers.ContainsKey("Cache-Control"))
@@ -815,7 +830,7 @@ namespace Cave.Web
         /// <summary>Sets the static cache time.</summary>
         /// <param name="answer">The answer.</param>
         /// <param name="cacheTime">The cache time.</param>
-        /// <exception cref="ArgumentOutOfRangeException">cacheTime</exception>
+        /// <exception cref="ArgumentOutOfRangeException">cacheTime.</exception>
         public void SetStaticCacheTime(WebAnswer answer, TimeSpan cacheTime)
         {
             if (answer.Headers.ContainsKey("Cache-Control"))
@@ -851,19 +866,19 @@ namespace Cave.Web
         /// <param name="data">The data.</param>
         protected internal virtual void OnCheckSession(WebData data)
         {
-            //check for basic auth in request
+            // check for basic auth in request
             if (VerboseMode)
             {
                 Trace.TraceInformation("Request {0} Check Session {1}", data.Request, data.Session);
             }
 
-            WebServerAuthEventArgs e = new WebServerAuthEventArgs(data);
+            var e = new WebServerAuthEventArgs(data);
             CheckSession?.Invoke(this, e);
         }
 
         /// <summary>Raises the <see cref="E:CheckAccess" /> event.</summary>
         /// <param name="data">The data.</param>
-        /// <exception cref="WebServerException">User does not have the right to access {0}</exception>
+        /// <exception cref="WebServerException">User does not have the right to access {0}.</exception>
         protected internal virtual void OnCheckAccess(WebData data)
         {
             if (VerboseMode)
@@ -871,7 +886,7 @@ namespace Cave.Web
                 Trace.TraceInformation("Request {0} Check Access {1}", data.Request, data.Session);
             }
 
-            WebAccessEventArgs e = new WebAccessEventArgs(data);
+            var e = new WebAccessEventArgs(data);
             CheckAccess?.Invoke(this, e);
             if (e.Denied)
             {

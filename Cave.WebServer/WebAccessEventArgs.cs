@@ -3,9 +3,9 @@
 namespace Cave.Web
 {
     /// <summary>
-    /// Cave web page call
+    /// Cave web page call.
     /// </summary>
-    /// <seealso cref="System.EventArgs" />
+    /// <seealso cref="EventArgs" />
     public class WebAccessEventArgs : EventArgs
     {
         bool denied;
@@ -19,7 +19,7 @@ namespace Cave.Web
         /// <remarks>You can set this only once to true. All further set commands will be ignored.</remarks>
         public bool Denied { get => denied; set => denied |= value; }
 
-        /// <summary>Initializes a new instance of the <see cref="WebPageEventArgs"/> class.</summary>
+        /// <summary>Initializes a new instance of the <see cref="WebAccessEventArgs"/> class.</summary>
         /// <param name="data">The data.</param>
         public WebAccessEventArgs(WebData data)
         {

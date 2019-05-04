@@ -154,7 +154,7 @@ namespace Cave.IO
             SkipWhitespace(jsonString, ref index);
 
             int i = LastIndexOfNumber(jsonString, index);
-            int len = (i - index) + 1;
+            int len = i - index + 1;
             string result = jsonString.Substring(index, len);
             index = i + 1;
             if (long.TryParse(result, NumberStyles.Any, CultureInfo.InvariantCulture, out long l_Long))
@@ -172,7 +172,7 @@ namespace Cave.IO
 
         static string ParseString(string jsonString, ref int index)
         {
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
             char c;
 
             SkipWhitespace(jsonString, ref index);
@@ -250,6 +250,7 @@ namespace Cave.IO
                                 // convert the integer codepoint to a unicode char and add to string
                                 result.Append(char.ConvertFromUtf32((int)codePoint));
                             }
+
                             // skip 4 chars
                             index += 4;
                         }
@@ -258,13 +259,11 @@ namespace Cave.IO
                             throw new EndOfStreamException(string.Format("Unexpected end of input while reading string at position {0}!", index));
                         }
                     }
-
                 }
                 else
                 {
                     result.Append(c);
                 }
-
             }
             return result.ToString();
         }
@@ -282,22 +281,31 @@ namespace Cave.IO
                 switch (token)
                 {
                     case Token.None:
-                        //in some cases we need to exit here clean, check!
+                        // in some cases we need to exit here clean, check!
                         throw new InvalidDataException(string.Format("Missing data at position {0}!", index));
 
                     case Token.Comma:
-                        if (check == Token.ArrayOpen) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
+                        if (check == Token.ArrayOpen)
+                        {
+                            throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
+                        }
+
                         NextToken(jsonString, ref index);
                         break;
 
                     case Token.ObjectClose:
-                        if (check == Token.Comma) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
+                        if (check == Token.Comma)
+                        {
+                            throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
+                        }
+
                         NextToken(jsonString, ref index);
                         return;
 
                     default:
                         // name
                         string name = ParseString(jsonString, ref index);
+
                         // :
                         token = NextToken(jsonString, ref index);
                         if (token != Token.Colon)
@@ -306,7 +314,7 @@ namespace Cave.IO
                         }
 
                         // value
-                        JsonNode sub = new JsonNode(JsonNodeType.Object, name);
+                        var sub = new JsonNode(JsonNodeType.Object, name);
                         ParseContent(sub, jsonString, ref index);
                         obj.Add(sub);
                         break;
@@ -377,7 +385,7 @@ namespace Cave.IO
         {
             if (array.Type == JsonNodeType.Array)
             {
-                var newArray = new JsonNode(JsonNodeType.Array, "");
+                var newArray = new JsonNode(JsonNodeType.Array, string.Empty);
                 array.Add(newArray);
                 array = newArray;
             }
@@ -385,6 +393,7 @@ namespace Cave.IO
             {
                 array.ConvertToArray();
             }
+
             // [
             Token check = NextToken(jsonString, ref index);
             if (check != Token.ArrayOpen)
@@ -399,21 +408,29 @@ namespace Cave.IO
                 switch (token)
                 {
                     case Token.None:
-                        //in some cases we need to exit here clean, check!
+                        // in some cases we need to exit here clean, check!
                         throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
 
                     case Token.Comma:
-                        if (check == Token.ArrayOpen) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
+                        if (check == Token.ArrayOpen)
+                        {
+                            throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
+                        }
+
                         token = NextToken(jsonString, ref index);
                         break;
 
                     case Token.ArrayClose:
-                        if (check == Token.Comma) throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
-                        token = NextToken(jsonString, ref index);                        
+                        if (check == Token.Comma)
+                        {
+                            throw new InvalidDataException(string.Format("Json object, value or array expected at position {0}, got {1}!", index, token));
+                        }
+
+                        token = NextToken(jsonString, ref index);
                         return;
 
                     case Token.ObjectOpen:
-                        JsonNode sub = new JsonNode(JsonNodeType.Object, (i++).ToString());
+                        var sub = new JsonNode(JsonNodeType.Object, i++.ToString());
                         ParseContent(sub, jsonString, ref index);
                         token = PeekToken(jsonString, index);
                         array.Add(sub);
@@ -436,18 +453,22 @@ namespace Cave.IO
             {
                 throw new InvalidDataException(string.Format("Json data does not start with a valid token!"));
             }
-            JsonNode root = new JsonNode(JsonNodeType.Object, "");
+            var root = new JsonNode(JsonNodeType.Object, string.Empty);
             ParseContent(root, jsonString, ref index);
             SkipWhitespace(jsonString, ref index);
             if (index < jsonString.Length)
             {
                 throw new InvalidDataException(string.Format("Additional data at end encountered!"));
             }
-            //set root to first (single) node if array / object
+
+            // set root to first (single) node if array / object
             if (first == Token.ObjectOpen)
             {
-                var subs = root.SubNodes;
-                if (subs.Length == 1) return subs[0];
+                JsonNode[] subs = root.SubNodes;
+                if (subs.Length == 1)
+                {
+                    return subs[0];
+                }
             }
             return root;
         }
@@ -455,7 +476,7 @@ namespace Cave.IO
         #endregion
 
         /// <summary>
-        /// Loads a whole json file
+        /// Initializes a new instance of the <see cref="JsonReader"/> class.
         /// </summary>
         /// <param name="fileName"></param>
         public JsonReader(string fileName)
@@ -464,7 +485,7 @@ namespace Cave.IO
         }
 
         /// <summary>
-        /// Loads Json data from stream
+        /// Initializes a new instance of the <see cref="JsonReader"/> class.
         /// </summary>
         /// <param name="stream"></param>
         public JsonReader(Stream stream)
@@ -473,32 +494,32 @@ namespace Cave.IO
         }
 
         /// <summary>
-        /// Loads json data
+        /// Initializes a new instance of the <see cref="JsonReader"/> class.
         /// </summary>
-        /// <param name="data">Content</param>
+        /// <param name="data">Content.</param>
         public JsonReader(byte[] data)
         {
             Root = Parse(Encoding.UTF8.GetString(data));
         }
 
         /// <summary>
-        /// Loads json data
+        /// Initializes a new instance of the <see cref="JsonReader"/> class.
         /// </summary>
-        /// <param name="data">Content</param>
+        /// <param name="data">Content.</param>
         public JsonReader(string[] data)
         {
-            Root = Parse(string.Join("", data));
+            Root = Parse(string.Join(string.Empty, data));
         }
 
         /// <summary>
-        /// Obtains the root node
+        /// Gets the root node.
         /// </summary>
         public JsonNode Root { get; private set; }
 
         /// <summary>
-        /// Obtains the child node at the specified path
+        /// Gets the child node at the specified path.
         /// </summary>
-        /// <param name="path">Path of the child node to retrieve</param>
+        /// <param name="path">Path of the child node to retrieve.</param>
         /// <returns></returns>
         public JsonNode GetNode(params string[] path)
         {
@@ -521,9 +542,9 @@ namespace Cave.IO
         }
 
         /// <summary>
-        /// Obtains the value at the specified path
+        /// Gets the value at the specified path.
         /// </summary>
-        /// <param name="path">Path of the value to retrieve</param>
+        /// <param name="path">Path of the value to retrieve.</param>
         /// <returns></returns>
         public object GetValue(params string[] path)
         {
@@ -537,9 +558,9 @@ namespace Cave.IO
         }
 
         /// <summary>
-        /// Obtains the values at the specified path
+        /// Gets the values at the specified path.
         /// </summary>
-        /// <param name="path">Path of the values to retrieve</param>
+        /// <param name="path">Path of the values to retrieve.</param>
         /// <returns></returns>
         public object[] GetValues(params string[] path)
         {

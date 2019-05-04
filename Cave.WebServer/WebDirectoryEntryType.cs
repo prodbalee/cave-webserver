@@ -1,7 +1,7 @@
 ﻿namespace Cave.Web
 {
     /// <summary>
-    /// Provides all available web directory entry types
+    /// Provides all available web directory entry types.
     /// </summary>
     public enum WebDirectoryEntryType
     {
