@@ -212,9 +212,9 @@ namespace Cave.Web
             {
                 typeName = typeName.Replace("Cave.Web.Auth.", "Cave.Auth.");
             }
-            else if (typeName == "Cave.Web.eWebMessage")
+            if (typeName.StartsWith("Cave.Web.e"))
             {
-                return typeof(WebMessage);
+                typeName = typeName.Replace("Cave.Web.e", "Cave.Web.");
             }
 
             return AppDom.FindType(typeName, mode);
