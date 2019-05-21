@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using NUnit.Framework;
 
 namespace Test
@@ -9,57 +10,91 @@ namespace Test
     {
         static int Main(string[] args)
         {
-            int errors = 0;
-            Type[] types = typeof(Program).Assembly.GetTypes();
-            foreach (Type type in types.OrderBy(t => t.Name))
+            Mutex mutex;
+            try
             {
-                if (!type.GetCustomAttributes(typeof(TestFixtureAttribute), false).Any())
-                {
-                    continue;
-                }
+                mutex = Mutex.OpenExisting(AppDomain.CurrentDomain.FriendlyName);
+            }
+            catch
+            {
+                mutex = null;
+            }
 
-                object instance = Activator.CreateInstance(type);
-                foreach (System.Reflection.MethodInfo method in type.GetMethods())
+            if (mutex == null)
+            {
+                mutex = new Mutex(false, AppDomain.CurrentDomain.FriendlyName);
+            }
+            else
+            {
+                mutex.Close();
+                Console.WriteLine("Another test instance is already running!");
+                return 0;
+            }
+
+            int errors = 0;
+            try
+            {
+                Type[] types = typeof(Program).Assembly.GetTypes();
+                foreach (Type type in types.OrderBy(t => t.Name))
                 {
-                    if (!method.GetCustomAttributes(typeof(TestAttribute), false).Any())
+                    if (!type.GetCustomAttributes(typeof(TestFixtureAttribute), false).Any())
                     {
                         continue;
                     }
 
-                    GC.Collect(999, GCCollectionMode.Default, true);
+                    object instance = Activator.CreateInstance(type);
+                    foreach (System.Reflection.MethodInfo method in type.GetMethods())
+                    {
+                        if (!method.GetCustomAttributes(typeof(TestAttribute), false).Any())
+                        {
+                            continue;
+                        }
 
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{method.DeclaringType.Name}.cs: info TI0001: Start {method.Name}");
-                    Console.ResetColor();
-                    try
-                    {
-                        var action = (Action)method.CreateDelegate(typeof(Action), instance);
-                        action();
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine($"{method.DeclaringType.Name}.cs: info TI0002: Success {method.Name}");
+                        GC.Collect(999, GCCollectionMode.Default, true);
+
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.WriteLine($"{method.DeclaringType.Name}.cs: info TI0001: Start {method.Name}");
                         Console.ResetColor();
+                        try
+                        {
+                            var action = (Action)method.CreateDelegate(typeof(Action), instance);
+                            action();
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"{method.DeclaringType.Name}.cs: info TI0002: Success {method.Name}");
+                            Console.ResetColor();
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex);
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"{method.DeclaringType.Name}.cs: error TE0001: {ex.Message}");
+                            Console.WriteLine(ex);
+                            Console.ResetColor();
+                            errors++;
+                        }
+                        Console.WriteLine("---");
                     }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex);
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"{method.DeclaringType.Name}.cs: error TE0001: {ex.Message}");
-                        Console.WriteLine(ex);
-                        Console.ResetColor();
-                        errors++;
-                    }
-                    Console.WriteLine("---");
+                }
+                if (errors == 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"---: info TI9999: All tests successfully completed.");
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"---: error TE9999: {errors} tests failed!");
                 }
             }
-            if (errors == 0)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"---: info TI9999: All tests successfully completed.");
-            }
-            else
+            catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"---: error TE9999: {errors} tests failed!");
+                Console.WriteLine(ex);
+                errors++;
+            }
+            finally
+            {
+                mutex.Close();
             }
             Console.ResetColor();
             if (Debugger.IsAttached)
@@ -75,7 +110,6 @@ namespace Test
             Console.Write("--- press enter to exit ---");
             while (Console.ReadKey(true).Key != ConsoleKey.Enter)
             {
-                ;
             }
         }
     }
