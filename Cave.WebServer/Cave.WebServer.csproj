@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45;net46;net47</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net45;net46</TargetFrameworks>
     <Authors>Andreas Rohleder</Authors>
     <Company>CaveSystems GmbH, Andreas Rohleder</Company>
     <Copyright>(c) 2003-$([System.DateTime]::UtcNow.Year) Andreas Rohleder</Copyright>
