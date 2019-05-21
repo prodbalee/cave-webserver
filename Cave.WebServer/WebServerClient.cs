@@ -150,15 +150,10 @@ namespace Cave.Web
             {
                 Writer.Write(answer.ContentData);
             }
+            Writer.Flush();
             Trace.TraceInformation("{0}. Elapsed <cyan>{1}<default>.", answer, StopWatch.Elapsed.FormatTime());
             if (answer.CloseAfterAnswer)
             {
-                DateTime endTime = DateTime.UtcNow.AddSeconds(10);
-                while (IsConnected && DateTime.UtcNow < endTime)
-                {
-                    Thread.Sleep(1);
-                }
-
                 Close();
             }
         }
