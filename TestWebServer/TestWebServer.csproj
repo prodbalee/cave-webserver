@@ -129,10 +129,6 @@
       <Project>{6fb8ab43-1cfa-4fef-a884-57123f6818b4}</Project>
       <Name>Cave.WebServer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Test\Test.csproj">
-      <Project>{a13b71da-2ae2-4b87-963a-3c5e417b4f67}</Project>
-      <Name>Test</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Cave.AssemblyVersionInfo">
