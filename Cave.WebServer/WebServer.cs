@@ -12,7 +12,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using Cave.Auth;
-using Cave.Collections.Generic;
+using Cave.Collections.Concurrent;
 using Cave.Data;
 using Cave.Net;
 
@@ -32,7 +32,7 @@ namespace Cave.Web
         #region private fields
         readonly Dictionary<string, WebServerMethod> paths = new Dictionary<string, WebServerMethod>();
         readonly WebExplain explain = new WebExplain();
-        readonly Set<TcpServer<WebServerClient>> tcpServers = new Set<TcpServer<WebServerClient>>();
+        readonly ConcurrentSet<TcpServer<WebServerClient>> tcpServers = new ConcurrentSet<TcpServer<WebServerClient>>();
 
         X509Certificate2 certificate;
         IDictionary<string, WebTemplate> templates;
@@ -404,6 +404,19 @@ namespace Cave.Web
 
         #endregion
 
+        #region StartServer function
+
+        void StartServer(Action<ITcpServer> startAction)
+        {
+            var server = new TcpServer<WebServerClient>();
+            server.AcceptThreads = 20;
+            server.ClientAccepted += ClientAccepted;
+            startAction(server);
+            tcpServers.Add(server);
+        }
+
+        #endregion
+
         #endregion
 
         #region public events
@@ -755,10 +768,7 @@ namespace Cave.Web
         {
             exit = false;
             Trace.TraceInformation("Start listening at port {0}", port);
-            var server = new TcpServer<WebServerClient>();
-            server.ClientAccepted += ClientAccepted;
-            server.Listen(port);
-            tcpServers.Add(server);
+            StartServer((server) => server.Listen(port));
         }
 
         /// <summary>Listens at the specified port.</summary>
@@ -768,11 +778,13 @@ namespace Cave.Web
         {
             exit = false;
             Trace.TraceInformation("Start listening at endpoint <cyan>{0}", endPoint);
-            var server = new TcpServer<WebServerClient>();
-            server.ClientAccepted += ClientAccepted;
-            server.Listen(endPoint);
-            tcpServers.Add(server);
+            StartServer((server) => server.Listen(endPoint));
         }
+
+        /// <summary>
+        /// Gets the list of active server instances.
+        /// </summary>
+        public IList<ITcpServer> Servers => tcpServers.Cast<ITcpServer>().ToList();
 
         /// <summary>
         /// Pause the webserver (will no longer accept new requests).
