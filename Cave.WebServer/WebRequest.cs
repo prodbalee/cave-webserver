@@ -283,11 +283,16 @@ namespace Cave.Web
         /// </exception>
         public void SetPostData(byte[] data)
         {
-            switch (Command)
+            //switch (Command)
+            //{
+            //    case WebCommand.POST:
+            //    case WebCommand.PUT:
+            //        throw new Exception("Request is not a post/put request!");
+            //}
+            // above sentence has error. because if command is "post", then occured error. This is not error case. right??
+            if (Command != WebCommand.POST && Command != WebCommand.PUT)
             {
-                case WebCommand.POST:
-                case WebCommand.PUT:
-                    throw new Exception("Request is not a post/put request!");
+                throw new Exception("Request is not a post/put request!");
             }
             if (PostData != null)
             {
